@@ -37,6 +37,11 @@ class Api():
     
 
 def api_get(endpoint, method='GET', timeout=None, access_token=None, **params):
+  if endpoint == "v2/pilotauth/":
+    backend = "https://api.commadotai.com/"
+  else:
+    backend = "http://testing.comma.life/api/"
+
   headers = {}
   if access_token is not None:
     headers['Authorization'] = "JWT "+access_token
