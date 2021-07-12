@@ -12,6 +12,12 @@ function two_init {
 
   # *** shield cores 2-3 ***
 
+  # offline cores 2-3 to force recurring timers onto the other cores
+  echo 0 > /sys/devices/system/cpu/cpu2/online
+  echo 0 > /sys/devices/system/cpu/cpu3/online
+  echo 1 > /sys/devices/system/cpu/cpu2/online
+  echo 1 > /sys/devices/system/cpu/cpu3/online
+
   # android gets two cores
   echo 0-1 > /dev/cpuset/background/cpus
   echo 0-1 > /dev/cpuset/system-background/cpus
