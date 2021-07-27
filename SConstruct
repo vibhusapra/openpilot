@@ -69,6 +69,7 @@ lenv = {
   "PATH": os.environ['PATH'],
 }
 
+
 if arch == "aarch64" or arch == "larch64":
   lenv["LD_LIBRARY_PATH"] = '/data/data/com.termux/files/usr/lib'
 
@@ -87,6 +88,7 @@ if arch == "aarch64" or arch == "larch64":
     "/system/vendor/lib64",
     "/system/comma/usr/lib",
     "#phonelibs/nanovg",
+    f"#phonelibs/acados/{arch}/lib",
   ]
 
   if arch == "larch64":
@@ -134,6 +136,7 @@ else:
     ]
   else:
     libpath = [
+      "#phonelibs/acados/x86_64/lib",
       "#phonelibs/snpe/x86_64-linux-clang",
       "#phonelibs/libyuv/x64/lib",
       "#phonelibs/mapbox-gl-native-qt/x86_64",
@@ -164,10 +167,11 @@ else:
 
 # no --as-needed on mac linker
 if arch != "Darwin":
-  ldflags += ["-Wl,--as-needed"]
+  ldflags += ["-Wl,--as-needed", "-Wl,--no-undefined"]
 
 # change pythonpath to this
-lenv["PYTHONPATH"] = Dir("#").path
+lenv["PYTHONPATH"] = Dir("#").abspath + ":" + Dir("#pyextra/").abspath
+lenv["TERA_PATH"] = Dir("#").abspath + f"/phonelibs/acados/{arch}/t_renderer"
 
 env = Environment(
   ENV=lenv,
@@ -187,6 +191,9 @@ env = Environment(
 
   CPPPATH=cpppath + [
     "#",
+    "#phonelibs/acados/include",
+    "#phonelibs/acados/include/blasfeo/include",
+    "#phonelibs/acados/include/hpipm/include",
     "#phonelibs/catch2/include",
     "#phonelibs/bzip2",
     "#phonelibs/libyuv/include",
@@ -406,7 +413,7 @@ SConscript(['selfdrive/camerad/SConscript'])
 SConscript(['selfdrive/modeld/SConscript'])
 
 SConscript(['selfdrive/controls/lib/cluster/SConscript'])
-SConscript(['selfdrive/controls/lib/lateral_mpc/SConscript'])
+SConscript(['selfdrive/controls/lib/lateral_mpc_lib/SConscript'])
 SConscript(['selfdrive/controls/lib/lead_mpc_lib/SConscript'])
 SConscript(['selfdrive/controls/lib/longitudinal_mpc_lib/SConscript'])
 
