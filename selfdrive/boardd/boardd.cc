@@ -107,7 +107,7 @@ bool usb_connect() {
   std::unique_ptr<Panda> tmp_panda;
   try {
     assert(panda == nullptr);
-    tmp_panda = std::make_unique<Panda>();
+    tmp_panda = std::make_unique<Panda>(getenv("PANDA_USB_SERIAL"));
   } catch (std::exception &e) {
     return false;
   }
@@ -174,7 +174,7 @@ static bool usb_retry_connect() {
   LOGW("attempting to connect");
   while (!do_exit && !usb_connect()) { util::sleep_for(100); }
   if (panda) {
-    LOGW("connected to board");
+    LOGW("connected to board: %s", panda->usb_serial.c_str());
   }
   return !do_exit;
 }
@@ -565,6 +565,14 @@ int main() {
 
   err = set_core_affinity(Hardware::TICI() ? 4 : 3);
   LOG("set affinity returns %d", err);
+
+  // For test/debug
+  std::vector<std::string> serials = Panda::list();
+  LOGW("total boards: %d", serials.size());
+  for(int i=0; i<serials.size(); ++i) {
+    LOGW("board #%d USB serial: %s", i, serials[i].c_str());
+  }
+  // For test/debug
 
   while (!do_exit) {
     std::vector<std::thread> threads;
