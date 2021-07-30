@@ -324,6 +324,7 @@ void panda_state_thread(bool spoofing_started) {
 
     uint8_t safety_model_aux = pandaState.safety_model;
     int16_t safety_param_aux = pandaState.safety_param;
+    uint8_t controls_allowed = pandaState.controls_allowed;
 
     // Make sure CAN buses are live: safety_setter_thread does not work if Panda CAN are silent and there is only one other CAN node
     if (pandaState.safety_model == (uint8_t)(cereal::CarParams::SafetyModel::SILENT)) {
@@ -345,6 +346,7 @@ void panda_state_thread(bool spoofing_started) {
       } else {
         safety_model_aux = pandaState_aux.safety_model;
         safety_param_aux = pandaState_aux.safety_param;
+        controls_allowed = pandaState_aux.controls_allowed;
         ignition = ((pandaState_aux.ignition_line != 0) || (pandaState_aux.ignition_can != 0));
       }
     }
@@ -431,7 +433,7 @@ void panda_state_thread(bool spoofing_started) {
     
     ps.setIgnitionLine(ignition);
     ps.setIgnitionCan(pandaState.ignition_can);
-    ps.setControlsAllowed(pandaState.controls_allowed);
+    ps.setControlsAllowed(controls_allowed);
     ps.setGasInterceptorDetected(pandaState.gas_interceptor_detected);
     ps.setHasGps(true);
     ps.setCanRxErrs(pandaState.can_rx_errs);
