@@ -110,6 +110,12 @@ bool FrameReader::processFrames() {
 
   frmRgb_ = av_frame_alloc();
   assert(frmRgb_);
+  frmRgb_->format = pCodecCtx_->pix_fmt;
+  frmRgb_->width = width;
+  frmRgb_->height = height;
+  frmRgb_->linesize[0] = width;
+  frmRgb_->linesize[1] = width/4;
+  frmRgb_->linesize[2] = width/4;
 
   frames_.reserve(60 * 20);  // 20fps, one minute
   do {
