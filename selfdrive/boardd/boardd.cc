@@ -322,6 +322,9 @@ void panda_state_thread(bool spoofing_started) {
       pandaState.ignition_line = 1;
     }
 
+    uint8_t safety_model_aux = pandaState.safety_model;
+    int16_t safety_param_aux = pandaState.safety_param;
+
     // Make sure CAN buses are live: safety_setter_thread does not work if Panda CAN are silent and there is only one other CAN node
     if (pandaState.safety_model == (uint8_t)(cereal::CarParams::SafetyModel::SILENT)) {
       main_panda->set_safety_model(cereal::CarParams::SafetyModel::NO_OUTPUT);
@@ -340,6 +343,8 @@ void panda_state_thread(bool spoofing_started) {
       if (main_shift == 0) {
         ignition = ((pandaState.ignition_line != 0) || (pandaState.ignition_can != 0));
       } else {
+        safety_model_aux = pandaState_aux.safety_model;
+        safety_param_aux = pandaState_aux.safety_param;
         ignition = ((pandaState_aux.ignition_line != 0) || (pandaState_aux.ignition_can != 0));
       }
     }
@@ -435,8 +440,8 @@ void panda_state_thread(bool spoofing_started) {
     ps.setGmlanSendErrs(pandaState.gmlan_send_errs);
     ps.setPandaType(main_panda->hw_type);
     ps.setUsbPowerMode(cereal::PandaState::UsbPowerMode(pandaState.usb_power_mode));
-    ps.setSafetyModel(cereal::CarParams::SafetyModel(pandaState.safety_model));
-    ps.setSafetyParam(pandaState.safety_param);
+    ps.setSafetyModel(cereal::CarParams::SafetyModel(safety_model_aux));
+    ps.setSafetyParam(safety_param_aux);
     ps.setFanSpeedRpm(fan_speed_rpm);
     ps.setFaultStatus(cereal::PandaState::FaultStatus(pandaState.fault_status));
     ps.setPowerSaveEnabled((bool)(pandaState.power_save_enabled));
