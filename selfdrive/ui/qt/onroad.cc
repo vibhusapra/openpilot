@@ -196,6 +196,7 @@ void NvgWindow::resizeGL(int w, int h) {
 }
 
 void NvgWindow::paintGL() {
+  update_vision(&QUIState::ui_state);
   ui_draw(&QUIState::ui_state, width(), height());
 
   double cur_draw_t = millis_since_boot();

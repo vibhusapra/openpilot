@@ -209,7 +209,7 @@ static void update_params(UIState *s) {
   }
 }
 
-static void update_vision(UIState *s) {
+void update_vision(UIState *s) {
   if (!s->vipc_client->connected && s->scene.started) {
     if (s->vipc_client->connect(false)) {
       ui_init_vision(s);
@@ -298,7 +298,6 @@ void QUIState::update() {
   update_sockets(&ui_state);
   update_state(&ui_state);
   update_status(&ui_state);
-  update_vision(&ui_state);
 
   if (ui_state.scene.started != started_prev || ui_state.sm->frame == 1) {
     started_prev = ui_state.scene.started;
