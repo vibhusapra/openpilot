@@ -11,7 +11,7 @@
 #include "selfdrive/common/swaglog.h"
 #include "selfdrive/common/util.h"
 
-Panda::Panda(char *with_serial) {
+Panda::Panda(std::string serial) {
   // init libusb
   int err = libusb_init(&ctx);
   if (err != 0) { goto fail; }
@@ -29,15 +29,17 @@ Panda::Panda(char *with_serial) {
 
     if (desc.idVendor == 0xbbaa && desc.idProduct == 0xddcc) {
       libusb_open(device, &dev_handle);
-      unsigned char tmp_serial[25];
-      int ret = libusb_get_string_descriptor_ascii(dev_handle, desc.iSerialNumber, tmp_serial, sizeof(tmp_serial));
+      unsigned char desc_serial[25];
+      int ret = libusb_get_string_descriptor_ascii(dev_handle, desc.iSerialNumber, desc_serial, sizeof(desc_serial));
       if (ret < 0) { break; }
-      if ((with_serial != NULL) && (strcmp(with_serial, (char *)tmp_serial) != 0)) {
+      std::string tmp_serial = std::string(reinterpret_cast<const char*>(desc_serial));
+      
+      if (!(serial.empty()) && (serial.compare(tmp_serial) != 0)) {
         libusb_close(dev_handle);
         dev_handle = NULL;
         continue;
       }
-      usb_serial = (char *)tmp_serial;
+      usb_serial = tmp_serial;
       break;
     }
   }
@@ -338,7 +340,7 @@ void Panda::can_send(capnp::List<cereal::CanData>::Reader can_data_list) {
   usb_bulk_write(3, (unsigned char*)send.data(), send.size(), 5);
 }
 
-int Panda::can_receive(kj::Array<capnp::word>& out_buf) {
+int Panda::can_receive(kj::Array<capnp::word>& out_buf, uint8_t bus_shift) {
   uint32_t data[RECV_SIZE/4];
   int recv = usb_bulk_read(0x81, (unsigned char*)data, RECV_SIZE);
 
@@ -356,6 +358,7 @@ int Panda::can_receive(kj::Array<capnp::word>& out_buf) {
 
   // populate message
   auto canData = evt.initCan(num_msg);
+
   for (int i = 0; i < num_msg; i++) {
     if (data[i*4] & 4) {
       // extended
@@ -368,7 +371,8 @@ int Panda::can_receive(kj::Array<capnp::word>& out_buf) {
     canData[i].setBusTime(data[i*4+1] >> 16);
     int len = data[i*4+1]&0xF;
     canData[i].setDat(kj::arrayPtr((uint8_t*)&data[i*4+2], len));
-    canData[i].setSrc((data[i*4+1] >> 4) & 0xff);
+    canData[i].setSrc(((data[i*4+1] >> 4) & 0xff) + bus_shift);
+    printf("message on bus: %x, address: %x\n", ((data[i*4+1] >> 4) & 0xff) + bus_shift, data[i*4] >> 21 );
   }
   out_buf = capnp::messageToFlatArray(msg);
   return recv;
