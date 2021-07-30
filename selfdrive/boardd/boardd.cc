@@ -103,6 +103,7 @@ void safety_setter_thread() {
   LOGW("setting safety model: %d with param %d", (int)safety_model, safety_param);
 
   main_panda->set_safety_model(safety_model, safety_param);
+  // For now, but later should be set to it's own? Or set NO_OUTPUT in aux mode and safety_model in aux_can_drive mode? 
   if (aux_panda != nullptr) { aux_panda->set_safety_model(safety_model, safety_param); }
 
   safety_setter_thread_running = false;
@@ -318,50 +319,26 @@ void panda_state_thread(bool spoofing_started) {
   while (!do_exit && main_panda->connected) {
     health_t pandaState = main_panda->get_state();
 
-    if (spoofing_started) {
-      pandaState.ignition_line = 1;
-    }
-
-    uint8_t safety_model_aux = pandaState.safety_model;
-    int16_t safety_param_aux = pandaState.safety_param;
+    uint8_t safety_model = pandaState.safety_model;
+    int16_t safety_param = pandaState.safety_param;
     uint8_t controls_allowed = pandaState.controls_allowed;
+    uint8_t ignition_line = pandaState.ignition_line;
+    uint8_t ignition_can = pandaState.ignition_can;
+    uint8_t car_harness_status = pandaState.car_harness_status;
+
+    if (spoofing_started) {
+      ignition_line = 1;
+    }
 
     // Make sure CAN buses are live: safety_setter_thread does not work if Panda CAN are silent and there is only one other CAN node
     if (pandaState.safety_model == (uint8_t)(cereal::CarParams::SafetyModel::SILENT)) {
       main_panda->set_safety_model(cereal::CarParams::SafetyModel::NO_OUTPUT);
     }
 
-    if (aux_panda != nullptr) {
-      health_t pandaState_aux = aux_panda->get_state();
-
-      if (pandaState_aux.safety_model == (uint8_t)(cereal::CarParams::SafetyModel::SILENT)) {
-        aux_panda->set_safety_model(cereal::CarParams::SafetyModel::NO_OUTPUT);
-      }
-      if (!ignition && (pandaState.safety_model != (uint8_t)(cereal::CarParams::SafetyModel::NO_OUTPUT))) {
-      aux_panda->set_safety_model(cereal::CarParams::SafetyModel::NO_OUTPUT);
-      }
-
-      if (main_shift == 0) {
-        ignition = ((pandaState.ignition_line != 0) || (pandaState.ignition_can != 0));
-      } else {
-        safety_model_aux = pandaState_aux.safety_model;
-        safety_param_aux = pandaState_aux.safety_param;
-        controls_allowed = pandaState_aux.controls_allowed;
-        ignition = ((pandaState_aux.ignition_line != 0) || (pandaState_aux.ignition_can != 0));
-      }
-    }
-
-    if (ignition) {
-      no_ignition_cnt = 0;
-    } else {
-      no_ignition_cnt += 1;
-    }
-
 //#ifndef __x86_64__
     bool power_save_desired = !ignition;
     if (pandaState.power_save_enabled != power_save_desired) {
       main_panda->set_power_saving(power_save_desired);
-      if (aux_panda != nullptr) { aux_panda->set_power_saving(power_save_desired); }
     }
 
     // set safety mode to NO_OUTPUT when car is off. ELM327 is an alternative if we want to leverage athenad/connect
@@ -369,6 +346,40 @@ void panda_state_thread(bool spoofing_started) {
       main_panda->set_safety_model(cereal::CarParams::SafetyModel::NO_OUTPUT);
     }
 //#endif
+
+    if (aux_panda != nullptr) {
+      health_t pandaState_aux = aux_panda->get_state();
+
+      if (pandaState_aux.safety_model == (uint8_t)(cereal::CarParams::SafetyModel::SILENT)) {
+        aux_panda->set_safety_model(cereal::CarParams::SafetyModel::NO_OUTPUT);
+      }
+//#ifndef __x86_64__
+      bool power_save_desired_aux = !ignition;
+      if (pandaState_aux.power_save_enabled != power_save_desired_aux) {
+        aux_panda->set_power_saving(power_save_desired_aux);
+      }
+
+      if (!ignition && (pandaState.safety_model != (uint8_t)(cereal::CarParams::SafetyModel::NO_OUTPUT))) {
+      aux_panda->set_safety_model(cereal::CarParams::SafetyModel::NO_OUTPUT);
+      }
+//#endif
+      if (main_shift != 0) {
+        safety_model = pandaState_aux.safety_model;
+        safety_param = pandaState_aux.safety_param;
+        controls_allowed = pandaState_aux.controls_allowed;
+        ignition_line = pandaState_aux.ignition_line;
+        ignition_can = pandaState_aux.ignition_can;
+        car_harness_status = pandaState_aux.car_harness_status;
+      }
+    }
+
+    ignition = ((ignition_line != 0) || (ignition_can != 0));
+
+    if (ignition) {
+      no_ignition_cnt = 0;
+    } else {
+      no_ignition_cnt += 1;
+    }
 
     // clear VIN, CarParams, and set new safety on car start
     if (ignition && !ignition_last) {
@@ -431,8 +442,8 @@ void panda_state_thread(bool spoofing_started) {
       ps.setCurrent(pandaState.current);
     }
     
-    ps.setIgnitionLine(ignition);
-    ps.setIgnitionCan(pandaState.ignition_can);
+    ps.setIgnitionLine(ignition_line);
+    ps.setIgnitionCan(ignition_can);
     ps.setControlsAllowed(controls_allowed);
     ps.setGasInterceptorDetected(pandaState.gas_interceptor_detected);
     ps.setHasGps(true);
@@ -442,13 +453,13 @@ void panda_state_thread(bool spoofing_started) {
     ps.setGmlanSendErrs(pandaState.gmlan_send_errs);
     ps.setPandaType(main_panda->hw_type);
     ps.setUsbPowerMode(cereal::PandaState::UsbPowerMode(pandaState.usb_power_mode));
-    ps.setSafetyModel(cereal::CarParams::SafetyModel(safety_model_aux));
-    ps.setSafetyParam(safety_param_aux);
+    ps.setSafetyModel(cereal::CarParams::SafetyModel(safety_model));
+    ps.setSafetyParam(safety_param);
     ps.setFanSpeedRpm(fan_speed_rpm);
     ps.setFaultStatus(cereal::PandaState::FaultStatus(pandaState.fault_status));
     ps.setPowerSaveEnabled((bool)(pandaState.power_save_enabled));
     ps.setHeartbeatLost((bool)(pandaState.heartbeat_lost));
-    ps.setHarnessStatus(cereal::PandaState::HarnessStatus(pandaState.car_harness_status));
+    ps.setHarnessStatus(cereal::PandaState::HarnessStatus(car_harness_status));
 
     // Convert faults bitset to capnp list
     std::bitset<sizeof(pandaState.faults) * 8> fault_bits(pandaState.faults);
