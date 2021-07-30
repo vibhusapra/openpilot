@@ -55,7 +55,7 @@ private:
   std::unordered_map<uint32_t, EncodeIdx> eidx[MAX_CAMERAS];
 
   HttpRequest *http;
-  QJsonArray camera_paths;
+  QJsonArray camera_paths;  // TODO: make a vector?
   QJsonArray log_paths;
   QMap<int, LogReader*> lrs;
   QMap<int, FrameReader*> frs;

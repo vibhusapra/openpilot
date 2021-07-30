@@ -27,7 +27,12 @@ static bool decompressBZ2(std::vector<uint8_t> &dest, const char srcData[], size
 
 // class FileReader
 
-FileReader::FileReader(const QString &fn, QObject *parent) : url_(fn), QObject(parent) {}
+FileReader::FileReader(const QString &fn, QObject *parent) : QObject(parent) {
+  if (QFileInfo(fn).exists())
+    url_ = QUrl::fromLocalFile(fn);
+  else
+    url_ = fn;
+}
 
 void FileReader::read() {
   if (url_.isLocalFile()) {
@@ -127,6 +132,6 @@ void LogReader::parseEvents(const QByteArray &dat) {
     }
   }
   if (!exit_) {
-    emit finished(valid_);  
+    emit finished(valid_);
   }
 }

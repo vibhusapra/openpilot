@@ -2,6 +2,9 @@
 
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QDebug>
+#include <QFileInfo>
+#include <QDirIterator>
 
 #include "cereal/services.h"
 #include "selfdrive/camerad/cameras/camera_common.h"
@@ -45,10 +48,22 @@ Replay::Replay(QString route, SubMaster *sm_, QObject *parent) : sm(sm_), QObjec
     pm = new PubMaster(s);
   }
 
-  const QString url = "https://api.commadotai.com/v1/route/" + route + "/files";
-  http = new HttpRequest(this, !Hardware::PC());
-  QObject::connect(http, &HttpRequest::receivedResponse, this, &Replay::parseResponse);
-  http->sendRequest(url);
+  if (QFileInfo(route).exists()) {
+    QDirIterator it_logs(route, QStringList() << "*.bz2", QDir::Files, QDirIterator::Subdirectories);  // TODO: handle rlogs vs. qlogs
+    while (it_logs.hasNext())
+      log_paths.push_back(it_logs.next());
+
+    QDirIterator it_cams(route, QStringList() << "*.hevc", QDir::Files, QDirIterator::Subdirectories);  // TODO handle different cameras
+    while (it_cams.hasNext())
+      camera_paths.push_back(it_cams.next());
+
+    seekTime(0);
+  } else {
+    const QString url = "https://api.commadotai.com/v1/route/" + route + "/files";
+    http = new HttpRequest(this, !Hardware::PC());
+    QObject::connect(http, &HttpRequest::receivedResponse, this, &Replay::parseResponse);
+    http->sendRequest(url);
+  }
 }
 
 void Replay::parseResponse(const QString &response) {
@@ -57,7 +72,7 @@ void Replay::parseResponse(const QString &response) {
     qDebug() << "JSON Parse failed";
     return;
   }
-
+  qDebug() << doc;  // TODO see how this handles different logs and cams
   camera_paths = doc["cameras"].toArray();
   log_paths = doc["logs"].toArray();
 
@@ -70,6 +85,7 @@ void Replay::addSegment(int n) {
     return;
   }
 
+  qDebug() << "Adding segment:" << log_paths.at(n).toString();
   lrs[n] = new LogReader(log_paths.at(n).toString());
   // this is a queued connection, mergeEvents is executed in the main thread.
   QObject::connect(lrs[n], &LogReader::finished, this, &Replay::mergeEvents);
