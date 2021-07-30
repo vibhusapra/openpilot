@@ -214,13 +214,13 @@ static bool usb_retry_connect() {
 
 void can_recv(PubMaster &pm) {
   kj::Array<capnp::word> can_data;
-  if (main_panda->can_receive(can_data, main_shift)) { printf("Got message on main board\n"); }
+  main_panda->can_receive(can_data, main_shift);
   auto bytes = can_data.asBytes();
   pm.send("can", bytes.begin(), bytes.size());
   
   if (aux_panda != nullptr) {
     kj::Array<capnp::word> can_data_aux;
-    if (aux_panda->can_receive(can_data_aux, aux_shift)) { printf("Got message on aux board\n"); }
+    aux_panda->can_receive(can_data_aux, aux_shift);
     auto bytes_aux = can_data_aux.asBytes();
     pm.send("can", bytes_aux.begin(), bytes_aux.size());
     }

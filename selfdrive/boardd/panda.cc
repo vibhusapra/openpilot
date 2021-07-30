@@ -372,7 +372,7 @@ int Panda::can_receive(kj::Array<capnp::word>& out_buf, uint8_t bus_shift) {
     int len = data[i*4+1]&0xF;
     canData[i].setDat(kj::arrayPtr((uint8_t*)&data[i*4+2], len));
     canData[i].setSrc(((data[i*4+1] >> 4) & 0xff) + bus_shift);
-    printf("message on bus: %x, address: %x\n", ((data[i*4+1] >> 4) & 0xff) + bus_shift, data[i*4] >> 21 );
+    //printf("message on bus: %x, address: %x\n", ((data[i*4+1] >> 4) & 0xff) + bus_shift, data[i*4] >> 21 );
   }
   out_buf = capnp::messageToFlatArray(msg);
   return recv;
