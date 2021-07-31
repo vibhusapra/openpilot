@@ -179,6 +179,7 @@ function launch {
   tmux capture-pane -pq -S-1000 > /tmp/launch_log
 
   scons -j4 selfdrive/ui --replay
+  sleep 5
   mkdir -p /data/tmp/frames
   pushd selfdrive/ui
   ./ui &
