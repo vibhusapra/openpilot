@@ -15,11 +15,11 @@ SshControl::SshControl() : ButtonControl("SSH Keys", "", "Warning: This grants S
       if (username.length() > 0) {
         setText("LOADING");
         setEnabled(false);
-        getUserKeys(username);
+        //getUserKeys(username);
       }
     } else {
-      params.remove("GithubUsername");
-      params.remove("GithubSshKeys");
+      //params.remove("GithubUsername");
+      //params.remove("GithubSshKeys");
       refresh();
     }
   });

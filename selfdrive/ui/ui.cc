@@ -16,7 +16,7 @@
 
 #define BACKLIGHT_DT 0.05
 #define BACKLIGHT_TS 10.00
-#define BACKLIGHT_OFFROAD 75
+#define BACKLIGHT_OFFROAD 100
 
 
 // Projects a point in car to space to the corresponding point in full frame
@@ -360,7 +360,7 @@ void Device::updateBrightness(const UIState &s) {
 void Device::updateWakefulness(const UIState &s) {
   awake_timeout = std::max(awake_timeout - 1, 0);
 
-  bool should_wake = s.scene.started || s.scene.ignition;
+  bool should_wake = true;
   if (!should_wake) {
     // tap detection while display is off
     bool accel_trigger = abs(s.scene.accel_sensor - accel_prev) > 0.2;
