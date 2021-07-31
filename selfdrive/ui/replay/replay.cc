@@ -49,11 +49,11 @@ Replay::Replay(QString route, SubMaster *sm_, QObject *parent) : sm(sm_), QObjec
   }
 
   if (QFileInfo(route).exists()) {
-    QDirIterator it_logs(route, QStringList() << "*.bz2", QDir::Files, QDirIterator::Subdirectories);  // TODO: handle rlogs vs. qlogs
+    QDirIterator it_logs(route, QStringList() << "*.bz2", QDir::Files);  // TODO: handle rlogs vs. qlogs
     while (it_logs.hasNext())
       log_paths.push_back(it_logs.next());
 
-    QDirIterator it_cams(route, QStringList() << "*.hevc", QDir::Files, QDirIterator::Subdirectories);  // TODO handle different cameras
+    QDirIterator it_cams(route, QStringList() << "*.hevc", QDir::Files);  // TODO handle different cameras
     while (it_cams.hasNext())
       camera_paths.push_back(it_cams.next());
 
@@ -91,9 +91,24 @@ void Replay::addSegment(int n) {
   QObject::connect(lrs[n], &LogReader::finished, this, &Replay::mergeEvents);
 
   frs[n] = new FrameReader(qPrintable(camera_paths.at(n).toString()));
+  seekTime(0);
+//  frame_cache.push_back({});
+//  for (int i = 0; i < 1200; i++) {
+//    qDebug() << "getting frame:" << i;
+////    std::vector<uint8_t*> _frames;
+////    _frames.push_back(frs[n]->get(i));
+//
+////    frame_cache[n].push_back(_frames);
+//    uint8_t* buf = frs[n]->get(i);
+//    qDebug() << "is null:" << (buf == nullptr);
+////    qDebug() << buf[0];
+//    frame_cache[n].push_back(buf);
+//  }
 }
 
 void Replay::removeSegment(int n) {
+//  qDebug() << "REMOVE SEGMENT!";
+//  assert (false);
   // TODO: fix LogReader destructors
   /*
   if (lrs.contains(n)) {
@@ -204,6 +219,13 @@ void Replay::keyboardThread() {
   }
 }
 
+uint8_t * intdup(uint8_t const * src, size_t len)
+{
+   uint8_t* p = (uint8_t*)calloc(len, sizeof(uint8_t));
+   memcpy(p, src, len * sizeof(uint8_t));
+   return p;
+}
+
 void Replay::stream() {
   QElapsedTimer timer;
   timer.start();
@@ -279,13 +301,46 @@ void Replay::stream() {
                 vipc_server->start_listener();
               }
 
-              uint8_t *dat = frm->get(e.frameEncodeId);
+
+//              if (frame_cache.size() == 0) {
+//                frame_cache.push_back({});
+//                for (int i = 0; i < 100; i++) {
+////                  qDebug() << "getting frame:" << i;
+//              //    std::vector<uint8_t*> _frames;
+//              //    _frames.push_back(frs[n]->get(i));
+//
+//              //    frame_cache[n].push_back(_frames);
+//                  uint8_t* buf = frs[0]->get(i);
+//                  assert(buf != nullptr);
+//
+//                  uint8_t* new_buf;
+//                  std::copy(buf, buf + bufferSize, new_buf);
+//                  assert(new_buf != nullptr);
+//              //    qDebug() << buf[0];
+//                  uint8_t* new_buf = intdup(buf, sizeof(buf));
+//                  assert(new_buf != nullptr);
+//                  frame_cache[0].push_back(new_buf);
+//                }
+//              }
+
+//              QElapsedTimer timer;
+//              timer.start();
+//              uint8_t *dat = frm->get(e.frameEncodeId);
+              uint8_t *dat = frm->frame_cache[e.frameEncodeId];
+//              qDebug() << "HERE!";
+
+//              uint8_t *dat = frame_cache[e.segmentNum][e.frameEncodeId];
+              qDebug() << e.segmentNum << e.frameEncodeId;
+//              qDebug() << "frame reader get took:" << timer.nsecsElapsed() / 1e6 << "ms";
               if (dat) {
+//                timer.start();
                 VisionIpcBufExtra extra = {};
                 VisionBuf *buf = vipc_server->get_buffer(VisionStreamType::VISION_STREAM_RGB_BACK);
                 memcpy(buf->addr, dat, frm->getRGBSize());
                 vipc_server->send(buf, &extra, false);
-              }
+//                qDebug() << "memcpy took:" << timer.nsecsElapsed() / 1e6 << "ms";
+              } else
+                qDebug() << "NULL";
             }
           }
         }

@@ -39,9 +39,31 @@ public:
 static AVInitializer av_initializer;
 
 FrameReader::FrameReader(const std::string &url, QObject *parent) : url_(url), QObject(parent) {
-  process_thread_ = QThread::create(&FrameReader::process, this);
-  connect(process_thread_, &QThread::finished, process_thread_, &QThread::deleteLater);
-  process_thread_->start();
+//  process_thread_ = QThread::create(&FrameReader::process, this);
+//  connect(process_thread_, &QThread::finished, process_thread_, &QThread::deleteLater);
+//  process_thread_->start();
+
+  processFrames();
+  qDebug() << "size:" << frames_.size();
+  for (int i = 0; i < frames_.size() && !exit_; ++i) {
+    qDebug() << "Processing frame:" << i;
+    Frame &frame = frames_[i];
+//    if (i >= from && i < to) {
+//      if (frame.data || frame.failed) continue;
+
+      uint8_t *dat = decodeFrame(&frame.pkt);
+      frame_cache.push_back(dat);
+//      std::unique_lock lk(mutex_);
+//      frame.data = dat;
+//      frame.failed = !dat;
+//      cv_frame_.notify_all();
+//    } else if (frame.data) {
+//      buffer_pool.push(frame.data);
+//      frame.data = nullptr;
+//      frame.failed = false;
+//    }
+  }
+
 }
 
 FrameReader::~FrameReader() {
@@ -86,6 +108,7 @@ bool FrameReader::processFrames() {
     qDebug() << "error loading " << url_.c_str();
     return false;
   }
+  qDebug() << "HJIDSFHJKHJKFSHJKFHKSJDHFKJSHDJKFhsdjkfHKJSDHFJK SDHJKJKSDfhujik";
   avformat_find_stream_info(pFormatCtx_, NULL);
   av_dump_format(pFormatCtx_, 0, url_.c_str(), 0);
 
@@ -110,12 +133,6 @@ bool FrameReader::processFrames() {
 
   frmRgb_ = av_frame_alloc();
   assert(frmRgb_);
-  frmRgb_->format = pCodecCtx_->pix_fmt;
-  frmRgb_->width = width;
-  frmRgb_->height = height;
-  frmRgb_->linesize[0] = width;
-  frmRgb_->linesize[1] = width/4;
-  frmRgb_->linesize[2] = width/4;
 
   frames_.reserve(60 * 20);  // 20fps, one minute
   do {
@@ -196,6 +213,7 @@ uint8_t *FrameReader::decodeFrame(AVPacket *pkt) {
       delete[] dat;
       dat = nullptr;
     }
+
   }
   av_frame_free(&f);
   return dat;
