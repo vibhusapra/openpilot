@@ -178,9 +178,17 @@ function launch {
   # write tmux scrollback to a file
   tmux capture-pane -pq -S-1000 > /tmp/launch_log
 
+  mkdir -p /data/tmp/frames
+  pushd selfdrive/ui
+  ./ui &
+  popd
+
+  pushd selfdrive/ui/replay
+  ./replay "/data/openpilot/selfdrive/ui/replay/videos"
+
   # start manager
-  cd selfdrive/manager
-  ./build.py && ./manager.py
+#  cd selfdrive/manager
+#  ./build.py && ./manager.py
 
   # if broken, keep on screen error
   while true; do sleep 1; done

@@ -27,8 +27,10 @@ int getch() {
   return ch;
 }
 
-Replay::Replay(QString route, bool cached, SubMaster *sm_, QObject *parent) : sm(sm_), QObject(parent) {
-  cached_idx = cached ? 1200 : 0;
+Replay::Replay(QString route, SubMaster *sm_, QObject *parent) : sm(sm_), QObject(parent) {
+  QDir dir("/data/tmp/frames");
+  dir.setFilter(QDir::AllEntries | QDir::NoDotAndDotDot);
+  cached_idx = dir.count() == 1200 ? 1200 : 0;
 
   QStringList block = QString(getenv("BLOCK")).split(",");
   qDebug() << "blocklist" << block;
