@@ -221,6 +221,7 @@ void Replay::stream() {
       route_start_ts = events.firstKey();
     }
 
+    seekTime(0);
     uint64_t t0 = route_start_ts + (seek_ts * 1e9);
     seek_ts = -1;
     qDebug() << "unlogging at" << int((t0 - route_start_ts) / 1e9);
@@ -233,7 +234,9 @@ void Replay::stream() {
     }
 
     uint64_t t0r = timer.nsecsElapsed();
+//    QElapsedTimer timer;
     while ((eit != events.end()) && seek_ts < 0) {
+//      timer.restart();
       cereal::Event::Reader e = (*eit)->event;
       std::string type;
       KJ_IF_MAYBE(e_, static_cast<capnp::DynamicStruct::Reader>(e).which()) {
@@ -250,12 +253,12 @@ void Replay::stream() {
           qInfo() << "at " << int(last_print) << "s";
         }
 
-        // keep time
+//        // keep time
         long etime = tm-t0;
         long rtime = timer.nsecsElapsed() - t0r;
         long us_behind = ((etime-rtime)*1e-3)+0.5;
         if (us_behind > 0 && us_behind < 1e6) {
-//          QThread::usleep(us_behind);
+          QThread::usleep(us_behind);
           //qDebug() << "sleeping" << us_behind << etime << timer.nsecsElapsed();
         }
 
@@ -287,7 +290,7 @@ void Replay::stream() {
                 fwrite(dat, sizeof(uint8_t), frm->getRGBSize(), f);
                 fclose(f);
               } else {
-                qDebug() << "Reading cached data!";
+//                qDebug() << "Reading cached data!";
                 FILE *f = fopen(QString("/media/frames/%1").arg(e.frameEncodeId).toStdString().c_str(), "rb");
 //                fseek(fileptr, 0, SEEK_END);
 //                filelen = ftell(fileptr);
@@ -323,6 +326,11 @@ void Replay::stream() {
       }
 
       ++eit;
+//      int u_elapsed = timer.nsecsElapsed() * 1000;
+//      qDebug() << u_elapsed;
+//      if (u_elapsed < 50000) {
+//      QThread::msleep(1);
+//      }
     }
   }
 }
