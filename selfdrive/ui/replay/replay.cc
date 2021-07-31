@@ -49,11 +49,11 @@ Replay::Replay(QString route, SubMaster *sm_, QObject *parent) : sm(sm_), QObjec
   }
 
   if (QFileInfo(route).exists()) {
-    QDirIterator it_logs(route, QStringList() << "*.bz2", QDir::Files, QDirIterator::Subdirectories);  // TODO: handle rlogs vs. qlogs
+    QDirIterator it_logs(route, QStringList() << "*.bz2", QDir::Files);  // TODO: handle rlogs vs. qlogs
     while (it_logs.hasNext())
       log_paths.push_back(it_logs.next());
 
-    QDirIterator it_cams(route, QStringList() << "*.hevc", QDir::Files, QDirIterator::Subdirectories);  // TODO handle different cameras
+    QDirIterator it_cams(route, QStringList() << "*.hevc", QDir::Files);  // TODO handle different cameras
     while (it_cams.hasNext())
       camera_paths.push_back(it_cams.next());
 
@@ -255,7 +255,7 @@ void Replay::stream() {
         long rtime = timer.nsecsElapsed() - t0r;
         long us_behind = ((etime-rtime)*1e-3)+0.5;
         if (us_behind > 0 && us_behind < 1e6) {
-          QThread::usleep(us_behind);
+//          QThread::usleep(us_behind);
           //qDebug() << "sleeping" << us_behind << etime << timer.nsecsElapsed();
         }
 
@@ -279,7 +279,26 @@ void Replay::stream() {
                 vipc_server->start_listener();
               }
 
-              uint8_t *dat = frm->get(e.frameEncodeId);
+              uint8_t *dat;
+              if (e.frameEncodeId >= cached_idx) {
+                dat = frm->get(e.frameEncodeId);
+                cached_idx++;
+                FILE *f = fopen(QString("/media/frames/%1").arg(e.frameEncodeId).toStdString().c_str(), "wb");
+                fwrite(dat, sizeof(uint8_t), frm->getRGBSize(), f);
+                fclose(f);
+              } else {
+                qDebug() << "Reading cached data!";
+                FILE *f = fopen(QString("/media/frames/%1").arg(e.frameEncodeId).toStdString().c_str(), "rb");
+//                fseek(fileptr, 0, SEEK_END);
+//                filelen = ftell(fileptr);
+//                rewind(fileptr);
+
+                dat = (uint8_t *)malloc(frm->getRGBSize() * sizeof(uint8_t));
+                fread(dat, frm->getRGBSize(), 1, f); // Read in the entire file
+                fclose(f);
+              }
+
+
               if (dat) {
                 VisionIpcBufExtra extra = {};
                 VisionBuf *buf = vipc_server->get_buffer(VisionStreamType::VISION_STREAM_RGB_BACK);

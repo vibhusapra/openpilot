@@ -39,6 +39,7 @@ public slots:
   void mergeEvents();
 
 private:
+  int cached_idx = 0;
   float last_print = 0;
   uint64_t route_start_ts;
   std::atomic<int> seek_ts = 0;

@@ -42,6 +42,34 @@ FrameReader::FrameReader(const std::string &url, QObject *parent) : url_(url), Q
   process_thread_ = QThread::create(&FrameReader::process, this);
   connect(process_thread_, &QThread::finished, process_thread_, &QThread::deleteLater);
   process_thread_->start();
+//  processFrames();
+
+//  for (int i = 0; i < frames_.size() && !exit_; ++i) {
+//    if (!valid_ || idx < 0 || idx >= frames_.size()) {
+//      return nullptr;
+//    }
+//
+//    {
+//      std::unique_lock lk(mutex_);
+//      decode_idx_ = idx;
+//      cv_decode_.notify_one();
+//      cv_frame_.wait(lk, [=] { return exit_ || frames_[idx].data || frames_[idx].failed; });
+//    }
+//
+//
+//    qDebug() << "Processing frame:" << i;
+//    Frame &frame = frames_[i];
+//    qDebug() << "Processing frame:" << i;
+//    uint8_t *dat = decodeFrame(&frame.pkt);
+//    qDebug() << "Processing frame:" << i;
+//
+//    FILE *f = fopen(QString("/home/batman/demo-route/frames-binary/%1").arg(i).toStdString().c_str(), "wb");
+//    qDebug() << "Processing frame:" << i;
+//    fwrite(dat, sizeof(uint8_t), sizeof(dat), f);
+//    qDebug() << "Processing frame:" << i;
+//    fclose(f);
+//    qDebug() << "Processing frame:" << i;
+//  }
 }
 
 FrameReader::~FrameReader() {
