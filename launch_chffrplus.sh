@@ -178,6 +178,7 @@ function launch {
   # write tmux scrollback to a file
   tmux capture-pane -pq -S-1000 > /tmp/launch_log
 
+  scons -j4 selfdrive/ui --replay
   mkdir -p /data/tmp/frames
   pushd selfdrive/ui
   ./ui &
