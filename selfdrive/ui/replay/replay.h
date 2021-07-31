@@ -45,8 +45,6 @@ private:
   std::atomic<int> current_ts = 0;
   std::atomic<int> current_segment = 0;
 
-  std::vector<std::vector<uint8_t*>> frame_cache;
-
   QThread *thread;
   QThread *kb_thread;
   QThread *queue_thread;

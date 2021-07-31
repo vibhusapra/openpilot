@@ -30,7 +30,6 @@ public:
   bool valid() const { return valid_; }
 
   int width = 0, height = 0;
-  std::vector<uint8_t*> frame_cache;
 
 signals:
   void finished();
