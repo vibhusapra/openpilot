@@ -27,7 +27,9 @@ int getch() {
   return ch;
 }
 
-Replay::Replay(QString route, SubMaster *sm_, QObject *parent) : sm(sm_), QObject(parent) {
+Replay::Replay(QString route, bool cached, SubMaster *sm_, QObject *parent) : sm(sm_), QObject(parent) {
+  cached_idx = cached ? 1200 : 0;
+
   QStringList block = QString(getenv("BLOCK")).split(",");
   qDebug() << "blocklist" << block;
 
@@ -256,7 +258,6 @@ void Replay::stream() {
         long etime = tm-t0;
         long rtime = timer.nsecsElapsed() - t0r;
         long us_behind = ((etime-rtime)*1e-3)+0.5;
-        qDebug() << us_behind;
         if (us_behind > 0 && us_behind < 10e6) {
           QThread::usleep(us_behind);
           //qDebug() << "sleeping" << us_behind << etime << timer.nsecsElapsed();
@@ -283,16 +284,15 @@ void Replay::stream() {
               }
 
               uint8_t *dat;
-//              qDebug() << e.frameEncodeId;
               if (e.frameEncodeId >= cached_idx) {
                 dat = frm->get(e.frameEncodeId);
                 cached_idx++;
-                FILE *f = fopen(QString("/home/batman/demo-route/frames-binary/%1").arg(e.frameEncodeId).toStdString().c_str(), "wb");
+                FILE *f = fopen(QString("/data/tmp/frames/%1").arg(e.frameEncodeId).toStdString().c_str(), "wb");
                 fwrite(dat, sizeof(uint8_t), frm->getRGBSize(), f);
                 fclose(f);
               } else {
 //                qDebug() << "Reading cached data!";
-                FILE *f = fopen(QString("/home/batman/demo-route/frames-binary/%1").arg(e.frameEncodeId).toStdString().c_str(), "rb");
+                FILE *f = fopen(QString("/data/tmp/frames/%1").arg(e.frameEncodeId).toStdString().c_str(), "rb");
 
                 dat = (uint8_t *)malloc(frm->getRGBSize() * sizeof(uint8_t));
                 fread(dat, frm->getRGBSize(), 1, f); // Read in the entire file
