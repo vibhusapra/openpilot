@@ -45,6 +45,7 @@ private:
   std::atomic<int> seek_ts = 0;
   std::atomic<int> current_ts = 0;
   std::atomic<int> current_segment = 0;
+  int single_segment_idx = 13;
 
   QThread *thread;
   QThread *kb_thread;
