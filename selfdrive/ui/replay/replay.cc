@@ -298,12 +298,14 @@ void Replay::stream() {
                 fclose(f);
               }
 
-
               if (dat) {
                 VisionIpcBufExtra extra = {};
                 VisionBuf *buf = vipc_server->get_buffer(VisionStreamType::VISION_STREAM_RGB_BACK);
                 memcpy(buf->addr, dat, frm->getRGBSize());
                 vipc_server->send(buf, &extra, false);
+              }
+              if (e.frameEncodeId < cached_idx - 1) {
+                free(dat);
               }
             }
           }
