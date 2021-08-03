@@ -318,6 +318,37 @@ void Panda::send_heartbeat() {
   usb_write(0xf3, 1, 0);
 }
 
+void Panda::temp(capnp::List<cereal::CanData>::Reader can_data_list, kj::Array<capnp::word>& out_buf, kj::Array<capnp::word>& out_buf2) {
+  const int msg_count = can_data_list.size();
+  
+  MessageBuilder msg;
+  auto evt = msg.initEvent();
+  evt.setValid(true);
+  auto canData = evt.initCan(msg_count);
+
+  MessageBuilder msg2;
+  auto evt2 = msg2.initEvent();
+  evt2.setValid(true);
+  auto canData2 = evt2.initCan(msg_count);
+
+  for (int i = 0; i < msg_count; i++) {
+    if (can_data_list[i].getSrc() > 5) { continue; }
+    canData[i].setAddress(can_data_list[i].getAddress());
+    canData[i].setBusTime(can_data_list[i].getBusTime());
+    canData[i].setDat(can_data_list[i].getDat());
+    canData[i].setSrc(can_data_list[i].getSrc() + 1);
+    printf("got TEMP message, changing bus to: %x\n", can_data_list[i].getSrc() + 1 );
+
+    canData2[i].setAddress(can_data_list[i].getAddress());
+    canData2[i].setBusTime(can_data_list[i].getBusTime());
+    canData2[i].setDat(can_data_list[i].getDat());
+    canData2[i].setSrc(can_data_list[i].getSrc() + 2);
+    printf("got TEMP message, changing bus to: %x\n", can_data_list[i].getSrc() + 2 );
+  }
+  out_buf = capnp::messageToFlatArray(msg);
+  out_buf2 = capnp::messageToFlatArray(msg2);
+}
+
 void Panda::can_send(capnp::List<cereal::CanData>::Reader can_data_list) {
   static std::vector<uint32_t> send;
   const int msg_count = can_data_list.size();
@@ -335,6 +366,7 @@ void Panda::can_send(capnp::List<cereal::CanData>::Reader can_data_list) {
     assert(can_data.size() <= 8);
     send[i*4+1] = can_data.size() | (cmsg.getSrc() << 4);
     memcpy(&send[i*4+2], can_data.begin(), can_data.size());
+    printf("sending message on bus: %x, address: %x\n", cmsg.getSrc(), cmsg.getAddress() );
   }
 
   usb_bulk_write(3, (unsigned char*)send.data(), send.size(), 5);
@@ -372,7 +404,7 @@ int Panda::can_receive(kj::Array<capnp::word>& out_buf, uint8_t bus_shift) {
     int len = data[i*4+1]&0xF;
     canData[i].setDat(kj::arrayPtr((uint8_t*)&data[i*4+2], len));
     canData[i].setSrc(((data[i*4+1] >> 4) & 0xff) + bus_shift);
-    //printf("message on bus: %x, address: %x\n", ((data[i*4+1] >> 4) & 0xff) + bus_shift, data[i*4] >> 21 );
+    printf("received message on bus: %x, address: %x\n", ((data[i*4+1] >> 4) & 0xff) + bus_shift, data[i*4] >> 21 );
   }
   out_buf = capnp::messageToFlatArray(msg);
   return recv;

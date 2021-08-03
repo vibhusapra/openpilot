@@ -232,7 +232,7 @@ void can_send_thread(bool fake_send) {
 
   AlignedBuffer aligned_buf;
   Context * context = Context::create();
-  SubSocket * subscriber = SubSocket::create(context, "sendcan");
+  SubSocket * subscriber = SubSocket::create(context, "can");
   assert(subscriber != NULL);
   subscriber->setTimeout(100);
 
@@ -254,7 +254,19 @@ void can_send_thread(bool fake_send) {
     if (nanos_since_boot() - event.getLogMonoTime() < 1e9) {
       if (!fake_send) {
         if (main_shift == 0) {
-          main_panda->can_send(event.getSendcan());
+
+          kj::Array<capnp::word> can_data_test;
+          kj::Array<capnp::word> can_data_test2;
+          main_panda->temp(event.getSendcan(), can_data_test, can_data_test2);
+
+          capnp::FlatArrayMessageReader csmsg(can_data_test);
+          cereal::Event::Reader eventq = csmsg.getRoot<cereal::Event>();
+
+          capnp::FlatArrayMessageReader csmsg2(can_data_test2);
+          cereal::Event::Reader eventq2 = csmsg2.getRoot<cereal::Event>();
+
+          main_panda->can_send(eventq.getSendcan());
+          main_panda->can_send(eventq2.getSendcan());
         } else {
           aux_panda->can_send(event.getSendcan());
         }
@@ -332,7 +344,7 @@ void panda_state_thread(bool spoofing_started) {
 
     // Make sure CAN buses are live: safety_setter_thread does not work if Panda CAN are silent and there is only one other CAN node
     if (pandaState.safety_model == (uint8_t)(cereal::CarParams::SafetyModel::SILENT)) {
-      main_panda->set_safety_model(cereal::CarParams::SafetyModel::NO_OUTPUT);
+      main_panda->set_safety_model(cereal::CarParams::SafetyModel::ELM327, 1);
     }
 
 //#ifndef __x86_64__
@@ -342,8 +354,8 @@ void panda_state_thread(bool spoofing_started) {
     }
 
     // set safety mode to NO_OUTPUT when car is off. ELM327 is an alternative if we want to leverage athenad/connect
-    if (!ignition && (pandaState.safety_model != (uint8_t)(cereal::CarParams::SafetyModel::NO_OUTPUT))) {
-      main_panda->set_safety_model(cereal::CarParams::SafetyModel::NO_OUTPUT);
+    if (!ignition && (pandaState.safety_model != (uint8_t)(cereal::CarParams::SafetyModel::ELM327))) {
+      main_panda->set_safety_model(cereal::CarParams::SafetyModel::ELM327, 1);
     }
 //#endif
 
@@ -351,7 +363,7 @@ void panda_state_thread(bool spoofing_started) {
       health_t pandaState_aux = aux_panda->get_state();
 
       if (pandaState_aux.safety_model == (uint8_t)(cereal::CarParams::SafetyModel::SILENT)) {
-        aux_panda->set_safety_model(cereal::CarParams::SafetyModel::NO_OUTPUT);
+        aux_panda->set_safety_model(cereal::CarParams::SafetyModel::ELM327, 1);
       }
 //#ifndef __x86_64__
       bool power_save_desired_aux = !ignition;
@@ -359,8 +371,8 @@ void panda_state_thread(bool spoofing_started) {
         aux_panda->set_power_saving(power_save_desired_aux);
       }
 
-      if (!ignition && (pandaState.safety_model != (uint8_t)(cereal::CarParams::SafetyModel::NO_OUTPUT))) {
-      aux_panda->set_safety_model(cereal::CarParams::SafetyModel::NO_OUTPUT);
+      if (!ignition && (pandaState.safety_model != (uint8_t)(cereal::CarParams::SafetyModel::ELM327))) {
+      aux_panda->set_safety_model(cereal::CarParams::SafetyModel::ELM327, 1);
       }
 //#endif
       if (main_shift != 0) {
