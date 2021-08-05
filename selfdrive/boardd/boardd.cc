@@ -301,12 +301,12 @@ void can_send_thread(bool fake_send) {
     //Dont send if older than 1 second
     if (nanos_since_boot() - event.getLogMonoTime() < 1e9) {
       if (!fake_send) {
-        //split_messages(event.getSendcan());
-        if (main_shift == 0) {
-          main_panda->can_send(event.getSendcan());
-        } else {
-          aux_panda->can_send(event.getSendcan());
-        }
+        split_messages(event.getSendcan());
+        // if (main_shift == 0) {
+        //   main_panda->can_send(event.getSendcan());
+        // } else {
+        //   aux_panda->can_send(event.getSendcan());
+        // }
       }
     }
 
