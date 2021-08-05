@@ -176,7 +176,8 @@ bool usb_connect() {
   }
 
   connected_once = true;
-  if (tmp_panda->hw_type != cereal::PandaState::PandaType::BLACK_PANDA && tmp_panda->hw_type != cereal::PandaState::PandaType::DOS) {// TESTING
+  if (tmp_panda->hw_type != cereal::PandaState::PandaType::UNO && tmp_panda->hw_type != cereal::PandaState::PandaType::DOS) {
+  //if (tmp_panda->hw_type != cereal::PandaState::PandaType::BLACK_PANDA && tmp_panda->hw_type != cereal::PandaState::PandaType::DOS) {// TESTING
     aux_panda = tmp_panda.release();
   } else {
     main_panda = tmp_panda.release();
@@ -227,6 +228,53 @@ void can_recv(PubMaster &pm) {
     }
 }
 
+void split_messages(capnp::List<cereal::CanData>::Reader can_data_list) {
+  const int msg_count = can_data_list.size();
+  int cnt_aux = 0;
+  int cnt_main = 0;
+
+  std::vector<uint32_t> send_main;
+  std::vector<uint32_t> send_aux;
+
+  for (int i = 0; i < msg_count; i++) {
+    auto cmsg = can_data_list[i];
+    uint32_t temp_data[4] = { };
+    if (cmsg.getAddress() >= 0x800) { // extended
+      temp_data[0] = (cmsg.getAddress() << 3) | 5;
+    } else { // normal
+      temp_data[0] = (cmsg.getAddress() << 21) | 1;
+    }
+    auto can_data = cmsg.getDat();
+    assert(can_data.size() <= 8);
+
+    bool secondary = false;
+    uint8_t bus = cmsg.getSrc();
+    if (bus > 2) {
+      bus = bus - 3;
+      secondary = true;
+    }
+
+    temp_data[1] = can_data.size() | (bus << 4);
+    memcpy(&temp_data[2], can_data.begin(), can_data.size());
+    printf("Got message for bus: %x\n", cmsg.getSrc() ); // TEST, REMOVE
+    if (cmsg.getSrc() > 5) { // FOR TESTING, ANTILOOP )))
+      continue; // Drop messages for bus num above 5
+    } else if (!secondary && main_shift == 0) { // Will flip sending points if drive by aux panda is used
+      cnt_main++;
+      send_main.resize(cnt_main*0x10);
+      memcpy(&send_main[i*4], temp_data, sizeof(temp_data));;
+    } else {
+      cnt_aux++;
+      send_aux.resize(cnt_aux*0x10);
+      memcpy(&send_aux[i*4], temp_data, sizeof(temp_data));
+    }
+  }
+  main_panda->usb_bulk_write(3, (unsigned char*)send_main.data(), send_main.size(), 5);
+  if (aux_panda != nullptr) {
+    aux_panda->usb_bulk_write(3, (unsigned char*)send_aux.data(), send_aux.size(), 5);
+  }
+}
+
 void can_send_thread(bool fake_send) {
   LOGD("start send thread");
 
@@ -253,24 +301,7 @@ void can_send_thread(bool fake_send) {
     //Dont send if older than 1 second
     if (nanos_since_boot() - event.getLogMonoTime() < 1e9) {
       if (!fake_send) {
-        if (main_shift == 0) {
-
-          kj::Array<capnp::word> can_data_test;
-          kj::Array<capnp::word> can_data_test2;
-          main_panda->temp(event.getSendcan(), can_data_test, can_data_test2);
-
-          capnp::FlatArrayMessageReader csmsg(can_data_test);
-          cereal::Event::Reader eventq = csmsg.getRoot<cereal::Event>();
-
-          capnp::FlatArrayMessageReader csmsg2(can_data_test2);
-          cereal::Event::Reader eventq2 = csmsg2.getRoot<cereal::Event>();
-
-          main_panda->can_send(eventq.getSendcan());
-          main_panda->can_send(eventq2.getSendcan());
-        } else {
-          aux_panda->can_send(event.getSendcan());
-        }
-        
+        split_messages(event.getSendcan());
       }
     }
 
@@ -344,36 +375,46 @@ void panda_state_thread(bool spoofing_started) {
 
     // Make sure CAN buses are live: safety_setter_thread does not work if Panda CAN are silent and there is only one other CAN node
     if (pandaState.safety_model == (uint8_t)(cereal::CarParams::SafetyModel::SILENT)) {
-      main_panda->set_safety_model(cereal::CarParams::SafetyModel::ELM327, 1);
+      main_panda->set_safety_model(cereal::CarParams::SafetyModel::NO_OUTPUT);
+      //main_panda->set_safety_model(cereal::CarParams::SafetyModel::ELM327, 1);
     }
 
 //#ifndef __x86_64__
     bool power_save_desired = !ignition;
+    power_save_desired = false; // TEST ONLY FOR PC!!! REMOVE!
     if (pandaState.power_save_enabled != power_save_desired) {
       main_panda->set_power_saving(power_save_desired);
     }
 
     // set safety mode to NO_OUTPUT when car is off. ELM327 is an alternative if we want to leverage athenad/connect
-    if (!ignition && (pandaState.safety_model != (uint8_t)(cereal::CarParams::SafetyModel::ELM327))) {
-      main_panda->set_safety_model(cereal::CarParams::SafetyModel::ELM327, 1);
+    if (!ignition && (pandaState.safety_model != (uint8_t)(cereal::CarParams::SafetyModel::NO_OUTPUT))) {
+      main_panda->set_safety_model(cereal::CarParams::SafetyModel::NO_OUTPUT);
     }
+    // if (!ignition && (pandaState.safety_model != (uint8_t)(cereal::CarParams::SafetyModel::ELM327))) {
+    //   main_panda->set_safety_model(cereal::CarParams::SafetyModel::ELM327, 1);
+    // }
 //#endif
 
     if (aux_panda != nullptr) {
       health_t pandaState_aux = aux_panda->get_state();
 
       if (pandaState_aux.safety_model == (uint8_t)(cereal::CarParams::SafetyModel::SILENT)) {
-        aux_panda->set_safety_model(cereal::CarParams::SafetyModel::ELM327, 1);
+        aux_panda->set_safety_model(cereal::CarParams::SafetyModel::NO_OUTPUT);
+        //aux_panda->set_safety_model(cereal::CarParams::SafetyModel::ELM327, 1);
       }
 //#ifndef __x86_64__
       bool power_save_desired_aux = !ignition;
+      power_save_desired_aux = false; // TEST ONLY FOR PC!!! REMOVE!
       if (pandaState_aux.power_save_enabled != power_save_desired_aux) {
         aux_panda->set_power_saving(power_save_desired_aux);
       }
 
-      if (!ignition && (pandaState.safety_model != (uint8_t)(cereal::CarParams::SafetyModel::ELM327))) {
-      aux_panda->set_safety_model(cereal::CarParams::SafetyModel::ELM327, 1);
+      if (!ignition && (pandaState.safety_model != (uint8_t)(cereal::CarParams::SafetyModel::NO_OUTPUT))) {
+      aux_panda->set_safety_model(cereal::CarParams::SafetyModel::NO_OUTPUT);
       }
+      // if (!ignition && (pandaState.safety_model != (uint8_t)(cereal::CarParams::SafetyModel::ELM327))) {
+      // aux_panda->set_safety_model(cereal::CarParams::SafetyModel::ELM327, 1);
+      // }
 //#endif
       if (main_shift != 0) {
         safety_model = pandaState_aux.safety_model;
