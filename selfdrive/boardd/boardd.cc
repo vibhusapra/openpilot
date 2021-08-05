@@ -390,12 +390,22 @@ void panda_state_thread(bool spoofing_started) {
       ignition_line = 1;
     }
 
-    ignition = ((ignition_line != 0) || (ignition_can != 0));
-
     // Make sure CAN buses are live: safety_setter_thread does not work if Panda CAN are silent and there is only one other CAN node
     if (pandaState.safety_model == (uint8_t)(cereal::CarParams::SafetyModel::SILENT)) {
       main_panda->set_safety_model(cereal::CarParams::SafetyModel::NO_OUTPUT);
       //main_panda->set_safety_model(cereal::CarParams::SafetyModel::ELM327, 1);
+    }
+    if (aux_panda != nullptr && pandaState_aux.safety_model == (uint8_t)(cereal::CarParams::SafetyModel::SILENT)) {
+      aux_panda->set_safety_model(cereal::CarParams::SafetyModel::NO_OUTPUT);
+      //aux_panda->set_safety_model(cereal::CarParams::SafetyModel::ELM327, 1);
+    }
+
+    ignition = ((ignition_line != 0) || (ignition_can != 0));
+
+    if (ignition) {
+      no_ignition_cnt = 0;
+    } else {
+      no_ignition_cnt += 1;
     }
 
 //#ifndef __x86_64__
@@ -403,6 +413,9 @@ void panda_state_thread(bool spoofing_started) {
     //power_save_desired = false; // TEST ONLY FOR PC!!! REMOVE!
     if (pandaState.power_save_enabled != power_save_desired) {
       main_panda->set_power_saving(power_save_desired);
+    }
+    if (aux_panda != nullptr && pandaState_aux.power_save_enabled != power_save_desired) {
+      aux_panda->set_power_saving(power_save_desired);
     }
 
     // set safety mode to NO_OUTPUT when car is off. ELM327 is an alternative if we want to leverage athenad/connect
@@ -412,34 +425,13 @@ void panda_state_thread(bool spoofing_started) {
     // if (!ignition && (pandaState.safety_model != (uint8_t)(cereal::CarParams::SafetyModel::ELM327))) {
     //   main_panda->set_safety_model(cereal::CarParams::SafetyModel::ELM327, 1);
     // }
-//#endif
-
-    if (aux_panda != nullptr) {
-      if (pandaState_aux.safety_model == (uint8_t)(cereal::CarParams::SafetyModel::SILENT)) {
-        aux_panda->set_safety_model(cereal::CarParams::SafetyModel::NO_OUTPUT);
-        //aux_panda->set_safety_model(cereal::CarParams::SafetyModel::ELM327, 1);
-      }
-//#ifndef __x86_64__
-      bool power_save_desired_aux = !ignition;
-      //power_save_desired_aux = false; // TEST ONLY FOR PC!!! REMOVE!
-      if (pandaState_aux.power_save_enabled != power_save_desired_aux) {
-        aux_panda->set_power_saving(power_save_desired_aux);
-      }
-
-      if (!ignition && (pandaState.safety_model != (uint8_t)(cereal::CarParams::SafetyModel::NO_OUTPUT))) {
+    if ((aux_panda != nullptr) && !ignition && (pandaState.safety_model != (uint8_t)(cereal::CarParams::SafetyModel::NO_OUTPUT))) {
       aux_panda->set_safety_model(cereal::CarParams::SafetyModel::NO_OUTPUT);
-      }
-      // if (!ignition && (pandaState.safety_model != (uint8_t)(cereal::CarParams::SafetyModel::ELM327))) {
-      // aux_panda->set_safety_model(cereal::CarParams::SafetyModel::ELM327, 1);
-      // }
+    }
+    // if (!ignition && (pandaState.safety_model != (uint8_t)(cereal::CarParams::SafetyModel::ELM327))) {
+    // aux_panda->set_safety_model(cereal::CarParams::SafetyModel::ELM327, 1);
+    // }
 //#endif
-    }
-
-    if (ignition) {
-      no_ignition_cnt = 0;
-    } else {
-      no_ignition_cnt += 1;
-    }
 
     // clear VIN, CarParams, and set new safety on car start
     if (ignition && !ignition_last) {
