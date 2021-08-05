@@ -256,7 +256,7 @@ void split_messages(capnp::List<cereal::CanData>::Reader can_data_list) {
 
     temp_data[1] = can_data.size() | (bus << 4);
     memcpy(&temp_data[2], can_data.begin(), can_data.size());
-    printf("Got message for bus: %x\n", cmsg.getSrc() ); // TEST, REMOVE
+    //printf("Got message for bus: %x\n", cmsg.getSrc() ); // TEST, REMOVE
     if (cmsg.getSrc() > 5) { // FOR TESTING, ANTILOOP )))
       continue; // Drop messages for bus num above 5
     } else if (!secondary && main_shift == 0) { // Will flip sending points if drive by aux panda is used
