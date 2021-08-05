@@ -281,6 +281,7 @@ void can_send_thread(bool fake_send) {
   AlignedBuffer aligned_buf;
   Context * context = Context::create();
   SubSocket * subscriber = SubSocket::create(context, "sendcan");
+  //SubSocket * subscriber = SubSocket::create(context, "sendcan"); // FOR TESTS ON PC
   assert(subscriber != NULL);
   subscriber->setTimeout(100);
 
