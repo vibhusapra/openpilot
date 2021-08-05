@@ -84,6 +84,7 @@ class Panda {
   void set_power_saving(bool power_saving);
   void set_usb_power_mode(cereal::PandaState::UsbPowerMode power_mode);
   void send_heartbeat();
+  void can_send_raw(std::vector<uint32_t> can_data_vector);
   void can_send(capnp::List<cereal::CanData>::Reader can_data_list);
   int can_receive(kj::Array<capnp::word>& out_buf, uint8_t bus_shift = 0);
 };

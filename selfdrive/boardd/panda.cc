@@ -318,6 +318,20 @@ void Panda::send_heartbeat() {
   usb_write(0xf3, 1, 0);
 }
 
+void Panda::can_send_raw(std::vector<uint32_t> can_data_vector) { // Needs better name...
+  const int msg_count = can_data_vector.size() / 4;
+
+  for (int i = 0; i < msg_count; i++) {
+    if (can_data_vector[i*4] >= 0x800) { // extended
+      can_data_vector[i*4] = (can_data_vector[i*4] << 3) | 5;
+    } else { // normal
+      can_data_vector[i*4] = (can_data_vector[i*4] << 21) | 1;
+    }
+  }
+
+  usb_bulk_write(3, (unsigned char*)can_data_vector.data(), can_data_vector.size(), 5);
+}
+
 void Panda::can_send(capnp::List<cereal::CanData>::Reader can_data_list) {
   static std::vector<uint32_t> send;
   const int msg_count = can_data_list.size();

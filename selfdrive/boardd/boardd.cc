@@ -236,42 +236,40 @@ void split_messages(capnp::List<cereal::CanData>::Reader can_data_list) {
   std::vector<uint32_t> send_main;
   std::vector<uint32_t> send_aux;
 
+  send_main.resize(msg_count*0x10);
+  send_aux.resize(msg_count*0x10);
+
   for (int i = 0; i < msg_count; i++) {
     auto cmsg = can_data_list[i];
-    uint32_t temp_data[4] = { };
-    if (cmsg.getAddress() >= 0x800) { // extended
-      temp_data[0] = (cmsg.getAddress() << 3) | 5;
-    } else { // normal
-      temp_data[0] = (cmsg.getAddress() << 21) | 1;
-    }
     auto can_data = cmsg.getDat();
     assert(can_data.size() <= 8);
-
+    uint32_t temp_data[4] = { };
     bool secondary = false;
+  
     uint8_t bus = cmsg.getSrc();
     if (bus > 2) {
       bus = bus - 3;
       secondary = true;
     }
-
-    temp_data[1] = can_data.size() | (bus << 4);
+    temp_data[0] = cmsg.getAddress();
+    temp_data[1] = can_data.size() | (bus << 4); // Keep it here, don't move to panda.cc for now
     memcpy(&temp_data[2], can_data.begin(), can_data.size());
     //printf("Got message for bus: %x\n", cmsg.getSrc() ); // TEST, REMOVE
     if (cmsg.getSrc() > 5) { // FOR TESTING, ANTILOOP )))
       continue; // Drop messages for bus num above 5
     } else if (!secondary && main_shift == 0) { // Will flip sending points if drive by aux panda is used
+      memcpy(&send_main[i*4], temp_data, sizeof(temp_data));
       cnt_main++;
-      send_main.resize(cnt_main*0x10);
-      memcpy(&send_main[i*4], temp_data, sizeof(temp_data));;
     } else {
-      cnt_aux++;
-      send_aux.resize(cnt_aux*0x10);
       memcpy(&send_aux[i*4], temp_data, sizeof(temp_data));
+      cnt_aux++;
     }
   }
-  main_panda->usb_bulk_write(3, (unsigned char*)send_main.data(), send_main.size(), 5);
+  send_main.resize(cnt_main*0x10);
+  main_panda->can_send_raw(send_main);
   if (aux_panda != nullptr) {
-    aux_panda->usb_bulk_write(3, (unsigned char*)send_aux.data(), send_aux.size(), 5);
+    send_aux.resize(cnt_aux*0x10);
+    aux_panda->can_send_raw(send_aux);
   }
 }
 
@@ -362,6 +360,8 @@ void panda_state_thread(bool spoofing_started) {
   // run at 2hz
   while (!do_exit && main_panda->connected) {
     health_t pandaState = main_panda->get_state();
+    health_t pandaState_aux;
+    if (aux_panda != nullptr) { pandaState_aux = aux_panda->get_state(); }
 
     uint8_t safety_model = pandaState.safety_model;
     int16_t safety_param = pandaState.safety_param;
@@ -370,9 +370,21 @@ void panda_state_thread(bool spoofing_started) {
     uint8_t ignition_can = pandaState.ignition_can;
     uint8_t car_harness_status = pandaState.car_harness_status;
 
+
+    if (main_shift != 0) {
+      safety_model = pandaState_aux.safety_model;
+      safety_param = pandaState_aux.safety_param;
+      controls_allowed = pandaState_aux.controls_allowed;
+      ignition_line = pandaState_aux.ignition_line;
+      ignition_can = pandaState_aux.ignition_can;
+      car_harness_status = pandaState_aux.car_harness_status;
+    }
+
     if (spoofing_started) {
       ignition_line = 1;
     }
+
+    ignition = ((ignition_line != 0) || (ignition_can != 0));
 
     // Make sure CAN buses are live: safety_setter_thread does not work if Panda CAN are silent and there is only one other CAN node
     if (pandaState.safety_model == (uint8_t)(cereal::CarParams::SafetyModel::SILENT)) {
@@ -382,7 +394,7 @@ void panda_state_thread(bool spoofing_started) {
 
 //#ifndef __x86_64__
     bool power_save_desired = !ignition;
-    power_save_desired = false; // TEST ONLY FOR PC!!! REMOVE!
+    //power_save_desired = false; // TEST ONLY FOR PC!!! REMOVE!
     if (pandaState.power_save_enabled != power_save_desired) {
       main_panda->set_power_saving(power_save_desired);
     }
@@ -397,15 +409,13 @@ void panda_state_thread(bool spoofing_started) {
 //#endif
 
     if (aux_panda != nullptr) {
-      health_t pandaState_aux = aux_panda->get_state();
-
       if (pandaState_aux.safety_model == (uint8_t)(cereal::CarParams::SafetyModel::SILENT)) {
         aux_panda->set_safety_model(cereal::CarParams::SafetyModel::NO_OUTPUT);
         //aux_panda->set_safety_model(cereal::CarParams::SafetyModel::ELM327, 1);
       }
 //#ifndef __x86_64__
       bool power_save_desired_aux = !ignition;
-      power_save_desired_aux = false; // TEST ONLY FOR PC!!! REMOVE!
+      //power_save_desired_aux = false; // TEST ONLY FOR PC!!! REMOVE!
       if (pandaState_aux.power_save_enabled != power_save_desired_aux) {
         aux_panda->set_power_saving(power_save_desired_aux);
       }
@@ -417,17 +427,7 @@ void panda_state_thread(bool spoofing_started) {
       // aux_panda->set_safety_model(cereal::CarParams::SafetyModel::ELM327, 1);
       // }
 //#endif
-      if (main_shift != 0) {
-        safety_model = pandaState_aux.safety_model;
-        safety_param = pandaState_aux.safety_param;
-        controls_allowed = pandaState_aux.controls_allowed;
-        ignition_line = pandaState_aux.ignition_line;
-        ignition_can = pandaState_aux.ignition_can;
-        car_harness_status = pandaState_aux.car_harness_status;
-      }
     }
-
-    ignition = ((ignition_line != 0) || (ignition_can != 0));
 
     if (ignition) {
       no_ignition_cnt = 0;
