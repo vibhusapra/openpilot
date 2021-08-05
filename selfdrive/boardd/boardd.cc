@@ -98,6 +98,7 @@ void safety_setter_thread() {
   cereal::CarParams::SafetyModel safety_model = car_params.getSafetyModel();
 
   main_panda->set_unsafe_mode(0);  // see safety_declarations.h for allowed values
+  if (aux_panda != nullptr) { aux_panda->set_unsafe_mode(0); }
 
   auto safety_param = car_params.getSafetyParam();
   LOGW("setting safety model: %d with param %d", (int)safety_model, safety_param);
@@ -300,7 +301,12 @@ void can_send_thread(bool fake_send) {
     //Dont send if older than 1 second
     if (nanos_since_boot() - event.getLogMonoTime() < 1e9) {
       if (!fake_send) {
-        split_messages(event.getSendcan());
+        //split_messages(event.getSendcan());
+        if (main_shift == 0) {
+          main_panda->can_send(event.getSendcan());
+        } else {
+          aux_panda->can_send(event.getSendcan());
+        }
       }
     }
 
