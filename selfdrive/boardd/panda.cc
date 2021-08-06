@@ -372,7 +372,6 @@ int Panda::can_receive(kj::Array<capnp::word>& out_buf, uint8_t bus_shift) {
 
   // populate message
   auto canData = evt.initCan(num_msg);
-
   for (int i = 0; i < num_msg; i++) {
     if (data[i*4] & 4) {
       // extended
