@@ -234,8 +234,8 @@ void split_messages(capnp::List<cereal::CanData>::Reader can_data_list) {
   int cnt_aux = 0;
   int cnt_main = 0;
 
-  std::vector<uint32_t> send_main;
-  std::vector<uint32_t> send_aux;
+  static std::vector<uint32_t> send_main;
+  static std::vector<uint32_t> send_aux;
 
   send_main.resize(msg_count*0x10);
   send_aux.resize(msg_count*0x10);
@@ -258,7 +258,8 @@ void split_messages(capnp::List<cereal::CanData>::Reader can_data_list) {
     //printf("Got message for bus: %x\n", cmsg.getSrc() ); // TEST, REMOVE
     if (cmsg.getSrc() > 5) { // FOR TESTING, ANTILOOP )))
       continue; // Drop messages for bus num above 5
-    } else if (!secondary && main_shift == 0) { // Will flip sending points if drive by aux panda is used
+    //} else if (!secondary && main_shift == 0) { // Will flip sending points if drive by aux panda is used
+    } else if (main_shift == 0) {
       memcpy(&send_main[i*4], temp_data, sizeof(temp_data));
       cnt_main++;
     } else {
@@ -266,9 +267,13 @@ void split_messages(capnp::List<cereal::CanData>::Reader can_data_list) {
       cnt_aux++;
     }
   }
-  send_main.resize(cnt_main*0x10);
-  main_panda->can_send_raw(send_main);
-  if (aux_panda != nullptr) {
+  if (cnt_main != 0) {
+    //printf("Have %x messages to send for main panda\n", cnt_main ); // TEST, REMOVE
+    send_main.resize(cnt_main*0x10);
+    main_panda->can_send_raw(send_main);
+  }
+  if ((cnt_aux != 0) && (aux_panda != nullptr)) {
+    //printf("Have %x messages to send for aux panda\n", cnt_aux ); // TEST, REMOVE
     send_aux.resize(cnt_aux*0x10);
     aux_panda->can_send_raw(send_aux);
   }
@@ -301,12 +306,12 @@ void can_send_thread(bool fake_send) {
     //Dont send if older than 1 second
     if (nanos_since_boot() - event.getLogMonoTime() < 1e9) {
       if (!fake_send) {
-        //split_messages(event.getSendcan());
-        if (main_shift == 0) {
-          main_panda->can_send(event.getSendcan());
-        } else {
-          aux_panda->can_send(event.getSendcan());
-        }
+        split_messages(event.getSendcan());
+        // if (main_shift == 0) {
+        //   main_panda->can_send(event.getSendcan());
+        // } else {
+        //   aux_panda->can_send(event.getSendcan());
+        // }
       }
     }
 
