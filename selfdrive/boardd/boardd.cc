@@ -216,10 +216,13 @@ static bool usb_retry_connect() {
 }
 
 void can_recv(PubMaster &pm) {
-  kj::Array<capnp::word> can_data;
-  panda->can_receive(can_data, main_shift);
-  auto bytes = can_data.asBytes();
-  pm.send("can", bytes.begin(), bytes.size());
+
+  // For now just receive messages from aux panda as we need to merge two messages later
+
+  // kj::Array<capnp::word> can_data;
+  // panda->can_receive(can_data, main_shift);
+  // auto bytes = can_data.asBytes();
+  // pm.send("can", bytes.begin(), bytes.size());
   
   if (panda_aux != nullptr) {
     kj::Array<capnp::word> can_data_aux;
