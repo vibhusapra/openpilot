@@ -118,7 +118,7 @@ bool usb_connect() {
     assert(panda == nullptr || panda_aux == nullptr);
     tmp_panda = std::make_unique<Panda>(pandas_detected[0]);
     pandas_connected.push_back(pandas_detected[0]);
-    pandas_detected.erase(std::find(pandas_detected.begin(), pandas_detected.end(), pandas_detected[0])); // Replace for cleaner method!
+    pandas_detected.erase(std::find(pandas_detected.begin(), pandas_detected.end(), pandas_detected[0]));
   } catch (std::exception &e) {
     return false;
   }
@@ -176,8 +176,7 @@ bool usb_connect() {
   }
 
   connected_once = true;
-  //if (tmp_panda->hw_type != cereal::PandaState::PandaType::UNO && tmp_panda->hw_type != cereal::PandaState::PandaType::DOS) {
-  if (tmp_panda->hw_type != cereal::PandaState::PandaType::BLACK_PANDA && tmp_panda->hw_type != cereal::PandaState::PandaType::DOS) {// TESTING
+  if (tmp_panda->hw_type != cereal::PandaState::PandaType::UNO && tmp_panda->hw_type != cereal::PandaState::PandaType::DOS) {
     panda_aux = tmp_panda.release();
   } else {
     panda = tmp_panda.release();
@@ -216,18 +215,15 @@ static bool usb_retry_connect() {
 
 void can_recv(PubMaster &pm) {
 
-  uint32_t data[(RECV_SIZE/4)*2]; // Double the size
+  uint32_t data[(RECV_SIZE/4)*2]; // Double the size, for both pandas
   size_t num_msg;
 
   num_msg = panda->can_receive_raw(&data[num_msg*4], main_shift);
-  if (num_msg > 0) printf("Received from main: %lu\n", num_msg);
   if (panda_aux != nullptr) num_msg += panda_aux->can_receive_raw(&data[num_msg*4], aux_shift);
-
-  if (num_msg > 1) printf("Received also from aux and combined total: %lu\n", num_msg);
 
   MessageBuilder msg;
   auto evt = msg.initEvent();
-  evt.setValid(panda->comms_healthy); // Fix this, should be comms_healthy from each panda?
+  evt.setValid(panda->comms_healthy); // Should be comms_healthy from each panda?
 
   // populate message
   auto canData = evt.initCan(num_msg);
@@ -237,9 +233,7 @@ void can_recv(PubMaster &pm) {
     int len = data[i*4+1]&0xF;
     canData[i].setDat(kj::arrayPtr((uint8_t*)&data[i*4+2], len));
     canData[i].setSrc(data[i*4+1] & 0xff);
-    printf("Got message from bus: %x and address was: %x\n", (data[i*4+1] & 0xff), data[i*4]);
   }
-
   auto can_data = capnp::messageToFlatArray(msg);
   auto bytes = can_data.asBytes();
   pm.send("can", bytes.begin(), bytes.size());
@@ -284,13 +278,11 @@ void split_messages(capnp::List<cereal::CanData>::Reader can_data_list) {
   }
   if (cnt_main) {
     send_main.resize(cnt_main*0x10);
-    //panda->can_send_raw(send_main);
-    printf("Got main messages to send: %x\n", cnt_main);
+    panda->can_send_raw(send_main);
   }
   if ((cnt_aux) && (panda_aux != nullptr)) {
     send_aux.resize(cnt_aux*0x10);
-    //panda_aux->can_send_raw(send_aux);
-    printf("Got aux messages to send: %x\n", cnt_aux);
+    panda_aux->can_send_raw(send_aux);
   }
 }
 
@@ -299,8 +291,7 @@ void can_send_thread(bool fake_send) {
 
   AlignedBuffer aligned_buf;
   Context * context = Context::create();
-  //SubSocket * subscriber = SubSocket::create(context, "sendcan");
-  SubSocket * subscriber = SubSocket::create(context, "can"); // FOR TESTS ON PC, will send what received
+  SubSocket * subscriber = SubSocket::create(context, "sendcan");
   assert(subscriber != NULL);
   subscriber->setTimeout(100);
 
@@ -391,7 +382,6 @@ void panda_state_thread(bool spoofing_started) {
     uint8_t ignition_can = pandaState.ignition_can;
     uint8_t car_harness_status = pandaState.car_harness_status;
 
-
     if (main_shift != 0) {
       safety_model = pandaState_aux.safety_model;
       safety_param = pandaState_aux.safety_param;
@@ -407,12 +397,10 @@ void panda_state_thread(bool spoofing_started) {
 
     // Make sure CAN buses are live: safety_setter_thread does not work if Panda CAN are silent and there is only one other CAN node
     if (pandaState.safety_model == (uint8_t)(cereal::CarParams::SafetyModel::SILENT)) {
-      //panda->set_safety_model(cereal::CarParams::SafetyModel::NO_OUTPUT);
-      panda->set_safety_model(cereal::CarParams::SafetyModel::ELM327, 1);
+      panda->set_safety_model(cereal::CarParams::SafetyModel::NO_OUTPUT);
     }
     if (panda_aux != nullptr && (pandaState_aux.safety_model == (uint8_t)(cereal::CarParams::SafetyModel::SILENT))) {
-      //panda_aux->set_safety_model(cereal::CarParams::SafetyModel::NO_OUTPUT);
-      panda_aux->set_safety_model(cereal::CarParams::SafetyModel::ELM327, 1);
+      panda_aux->set_safety_model(cereal::CarParams::SafetyModel::NO_OUTPUT);
     }
 
     ignition = ((ignition_line != 0) || (ignition_can != 0));
@@ -423,9 +411,8 @@ void panda_state_thread(bool spoofing_started) {
       no_ignition_cnt += 1;
     }
 
-//#ifndef __x86_64__
+#ifndef __x86_64__
     bool power_save_desired = !ignition;
-    power_save_desired = false; // TEST ONLY FOR PC!!! REMOVE!
     if (pandaState.power_save_enabled != power_save_desired) {
       panda->set_power_saving(power_save_desired);
     }
@@ -434,19 +421,13 @@ void panda_state_thread(bool spoofing_started) {
     }
 
     // set safety mode to NO_OUTPUT when car is off. ELM327 is an alternative if we want to leverage athenad/connect
-    // if (!ignition && (pandaState.safety_model != (uint8_t)(cereal::CarParams::SafetyModel::NO_OUTPUT))) {
-    //   panda->set_safety_model(cereal::CarParams::SafetyModel::NO_OUTPUT);
-    // }
-    if (!ignition && (pandaState.safety_model != (uint8_t)(cereal::CarParams::SafetyModel::ELM327))) {
-      panda->set_safety_model(cereal::CarParams::SafetyModel::ELM327, 1);
+    if (!ignition && (pandaState.safety_model != (uint8_t)(cereal::CarParams::SafetyModel::NO_OUTPUT))) {
+      panda->set_safety_model(cereal::CarParams::SafetyModel::NO_OUTPUT);
     }
-    // if ((panda_aux != nullptr) && !ignition && (pandaState.safety_model != (uint8_t)(cereal::CarParams::SafetyModel::NO_OUTPUT))) {
-    //   panda_aux->set_safety_model(cereal::CarParams::SafetyModel::NO_OUTPUT);
-    // }
-    if (!ignition && (pandaState.safety_model != (uint8_t)(cereal::CarParams::SafetyModel::ELM327))) {
-    panda_aux->set_safety_model(cereal::CarParams::SafetyModel::ELM327, 1);
+    if ((panda_aux != nullptr) && !ignition && (pandaState.safety_model != (uint8_t)(cereal::CarParams::SafetyModel::NO_OUTPUT))) {
+      panda_aux->set_safety_model(cereal::CarParams::SafetyModel::NO_OUTPUT);
     }
-//#endif
+#endif
 
     // clear VIN, CarParams, and set new safety on car start
     if (ignition && !ignition_last) {
@@ -713,7 +694,9 @@ int main() {
   err = set_core_affinity(Hardware::TICI() ? 4 : 3);
   LOG("set affinity returns %d", err);
 
+  // For now use both, later keep param only
   if (Params().getBool("DriveWithAuxPanda")) { main_shift = 4; aux_shift = 0; }
+  if (getenv("AUX_CAN_DRIVE") != nullptr) { main_shift = 4; aux_shift = 0; }
 
   while (!do_exit) {
     std::vector<std::thread> threads;
