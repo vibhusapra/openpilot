@@ -318,20 +318,6 @@ void Panda::send_heartbeat() {
   usb_write(0xf3, 1, 0);
 }
 
-void Panda::can_send_raw(std::vector<uint32_t> can_data_vector) { // Needs better name...
-  const int msg_count = can_data_vector.size() / 4;
-
-  for (int i = 0; i < msg_count; i++) {
-    if (can_data_vector[i*4] >= 0x800) { // extended
-      can_data_vector[i*4] = (can_data_vector[i*4] << 3) | 5;
-    } else { // normal
-      can_data_vector[i*4] = (can_data_vector[i*4] << 21) | 1;
-    }
-  }
-
-  usb_bulk_write(3, (unsigned char*)can_data_vector.data(), can_data_vector.size(), 5);
-}
-
 void Panda::can_send(capnp::List<cereal::CanData>::Reader can_data_list) {
   static std::vector<uint32_t> send;
   const int msg_count = can_data_list.size();
@@ -354,7 +340,7 @@ void Panda::can_send(capnp::List<cereal::CanData>::Reader can_data_list) {
   usb_bulk_write(3, (unsigned char*)send.data(), send.size(), 5);
 }
 
-int Panda::can_receive(kj::Array<capnp::word>& out_buf, uint8_t bus_shift) {
+int Panda::can_receive(kj::Array<capnp::word>& out_buf) {
   uint32_t data[RECV_SIZE/4];
   int recv = usb_bulk_read(0x81, (unsigned char*)data, RECV_SIZE);
 
@@ -384,8 +370,45 @@ int Panda::can_receive(kj::Array<capnp::word>& out_buf, uint8_t bus_shift) {
     canData[i].setBusTime(data[i*4+1] >> 16);
     int len = data[i*4+1]&0xF;
     canData[i].setDat(kj::arrayPtr((uint8_t*)&data[i*4+2], len));
-    canData[i].setSrc(((data[i*4+1] >> 4) & 0xff) + bus_shift);
+    canData[i].setSrc((data[i*4+1] >> 4) & 0xff);
   }
   out_buf = capnp::messageToFlatArray(msg);
   return recv;
+}
+
+void Panda::can_send_raw(std::vector<uint32_t> can_data_vector) { // Needs better name...
+  const int msg_count = can_data_vector.size() / 4;
+
+  for (int i = 0; i < msg_count; i++) {
+    if (can_data_vector[i*4] >= 0x800) { // extended
+      can_data_vector[i*4] = (can_data_vector[i*4] << 3) | 5;
+    } else { // normal
+      can_data_vector[i*4] = (can_data_vector[i*4] << 21) | 1;
+    }
+  }
+
+  usb_bulk_write(3, (unsigned char*)can_data_vector.data(), can_data_vector.size(), 5);
+}
+
+size_t Panda::can_receive_raw(uint32_t* data, uint8_t bus_shift) {
+  int recv = usb_bulk_read(0x81, (unsigned char*)data, RECV_SIZE);
+
+  // Not sure if this can happen
+  if (recv < 0) recv = 0;
+
+  if (recv == RECV_SIZE) {
+    LOGW("Receive buffer full");
+  }
+  size_t num_msg = recv / 0x10;
+  for (int i = 0; i < num_msg; i++) {
+    if (data[i*4] & 4) {
+      // extended
+      data[i*4] = data[i*4] >> 3;
+    } else {
+      // normal
+      data[i*4] = data[i*4] >> 21;
+    }
+    data[i*4+1] = (data[i*4+1] & 0xFFFF0000) | (((data[i*4+1] >> 4) & 0xFF) + bus_shift);
+  }
+  return num_msg;
 }

@@ -50,7 +50,7 @@ class Panda {
   void cleanup();
 
  public:
-  Panda(std::string serial="");
+  Panda(std::string serial);
   ~Panda();
 
   std::string usb_serial;
@@ -84,7 +84,8 @@ class Panda {
   void set_power_saving(bool power_saving);
   void set_usb_power_mode(cereal::PandaState::UsbPowerMode power_mode);
   void send_heartbeat();
-  void can_send_raw(std::vector<uint32_t> can_data_vector);
   void can_send(capnp::List<cereal::CanData>::Reader can_data_list);
-  int can_receive(kj::Array<capnp::word>& out_buf, uint8_t bus_shift = 0);
+  int can_receive(kj::Array<capnp::word>& out_buf);
+  void can_send_raw(std::vector<uint32_t> can_data_vector);
+  size_t can_receive_raw(uint32_t* data, uint8_t bus_shift);
 };
