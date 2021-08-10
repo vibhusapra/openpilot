@@ -695,8 +695,8 @@ int main() {
   LOG("set affinity returns %d", err);
 
   // For now use both, later keep param only
-  if (Params().getBool("DriveWithAuxPanda")) { main_shift = 4; aux_shift = 0; LOG("Using aux panda to drive, params");}
-  if (getenv("AUX_CAN_DRIVE") != nullptr) { main_shift = 4; aux_shift = 0; LOG("Using aux panda to drive, getenv");}
+  if (Params().getBool("DriveWithAuxPanda")) { main_shift = 4; aux_shift = 0; LOGW("Using aux panda to drive, params");}
+  if (getenv("AUX_CAN_DRIVE") != nullptr) { main_shift = 4; aux_shift = 0; LOGW("Using aux panda to drive, getenv");}
 
   while (!do_exit) {
     std::vector<std::thread> threads;
