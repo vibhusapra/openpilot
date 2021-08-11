@@ -34,7 +34,7 @@ Panda::Panda(std::string serial) {
       if (ret < 0) { break; }
       std::string tmp_serial = std::string(reinterpret_cast<const char*>(desc_serial));
       
-      if (!(serial.empty()) && (serial.compare(tmp_serial) != 0)) {
+      if (!serial.empty() && serial.compare(tmp_serial)) {
         libusb_close(dev_handle);
         dev_handle = NULL;
         continue;
