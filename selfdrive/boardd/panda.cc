@@ -408,7 +408,7 @@ size_t Panda::can_receive_raw(uint32_t* data, uint8_t bus_shift) {
       // normal
       data[i*4] = data[i*4] >> 21;
     }
-    data[i*4+1] = (data[i*4+1] & 0xFFFF0000) | (((data[i*4+1] >> 4) & 0xFF) + bus_shift);
+    data[i*4+1] = (data[i*4+1] & 0xFFFF0000) | (data[i*4+1]&0xF) | ((data[i*4+1] & 0xFF0) + (bus_shift << 8));
   }
   return num_msg;
 }

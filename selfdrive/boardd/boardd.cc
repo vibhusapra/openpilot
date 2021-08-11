@@ -232,7 +232,7 @@ void can_recv(PubMaster &pm) {
     canData[i].setBusTime(data[i*4+1] >> 16);
     int len = data[i*4+1]&0xF;
     canData[i].setDat(kj::arrayPtr((uint8_t*)&data[i*4+2], len));
-    canData[i].setSrc(data[i*4+1] & 0xff);
+    canData[i].setSrc((data[i*4+1] >> 4) & 0xff);
   }
   auto can_data = capnp::messageToFlatArray(msg);
   auto bytes = can_data.asBytes();
