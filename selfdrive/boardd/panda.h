@@ -42,7 +42,7 @@ struct __attribute__((packed)) health_t {
 
 class Panda {
  private:
- libusb_context *ctx = NULL;
+  libusb_context *ctx = NULL;
   libusb_device_handle *dev_handle = NULL;
   std::mutex usb_lock;
   void handle_usb_issue(int err, const char func[]);
