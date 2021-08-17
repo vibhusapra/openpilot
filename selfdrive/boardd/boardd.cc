@@ -216,7 +216,7 @@ static bool usb_retry_connect() {
 void can_recv(PubMaster &pm) {
 
   uint32_t data[(RECV_SIZE/4)*2]; // Double the size, for both pandas
-  size_t num_msg;
+  size_t num_msg = 0;
 
   num_msg = panda->can_receive_raw(&data[num_msg*4], main_shift);
   if (panda_aux != nullptr) num_msg += panda_aux->can_receive_raw(&data[num_msg*4], aux_shift);
