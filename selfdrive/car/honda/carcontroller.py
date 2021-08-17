@@ -203,8 +203,8 @@ class CarController():
                       -wind_brake*(3/4),
                       0.0]
       pcm_speed_V = [0.0,
-                     CS.out.vEgo + accel/2.0 - 2.0,
-                     CS.out.vEgo + accel/2.0 + 2.0]
+                     clip(CS.out.vEgo + accel/2.0 - 2.0, 0.0, 100.0),
+                     clip(CS.out.vEgo + accel/2.0 + 2.0, 0.0, 100.0)]
       pcm_speed = interp(-brake, pcm_speed_BP, pcm_speed_V)
 
     if not CS.CP.openpilotLongitudinalControl:
