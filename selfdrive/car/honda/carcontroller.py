@@ -26,17 +26,8 @@ def compute_gb_honda_nidec(accel, speed):
   return clip(gb, 0.0, 1.0), clip(-gb, 0.0, 1.0)
 
 
-def compute_gb_acura(accel, speed):
-  GB_VALUES = [-2., 0.0, 0.8]
-  GB_BP = [-5., 0.0, 4.0]
-  gb = interp(accel, GB_BP, GB_VALUES)
-  return clip(gb, 0.0, 1.0), clip(-gb, 0.0, 1.0)
-
-
 def compute_gas_brake(accel, speed, fingerprint):
-  if fingerprint == CAR.ACURA_ILX:
-    return compute_gb_acura(accel, speed)
-  elif fingerprint in HONDA_BOSCH:
+  if fingerprint in HONDA_BOSCH:
     return compute_gb_honda_bosch(accel, speed)
   else:
     return compute_gb_honda_nidec(accel, speed)
