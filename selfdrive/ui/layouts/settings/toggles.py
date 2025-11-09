@@ -31,6 +31,10 @@ DESCRIPTIONS = {
   'RecordFront': tr_noop("Upload data from the driver facing camera and help improve the driver monitoring algorithm."),
   "IsMetric": tr_noop("Display speed in km/h instead of mph."),
   "RecordAudio": tr_noop("Record and store microphone audio while driving. The audio will be included in the dashcam video in comma connect."),
+  "OnroadScreenSleepTimeout": tr_noop(
+    "Configure when the screen turns off while driving. Choose how long to wait after the last touch before the screen sleeps. " +
+    "Touch the screen to wake it up. Set to 'No' to keep the screen always on while driving."
+  ),
 }
 
 
@@ -102,6 +106,24 @@ class TogglesLayout(Widget):
       icon="speed_limit.png"
     )
 
+    # Onroad screen sleep timeout selector
+    TIMEOUT_VALUES = [0, 2, 3, 5, 10]  # Map indices to timeout values in seconds
+    current_timeout = self._params.get("OnroadScreenSleepTimeout", return_default=True)
+    try:
+      timeout_index = TIMEOUT_VALUES.index(current_timeout)
+    except (ValueError, TypeError):
+      timeout_index = 0  # Default to "No" if invalid value
+
+    self._onroad_screen_sleep_setting = multiple_button_item(
+      lambda: tr("Onroad Screen Sleep"),
+      lambda: tr(DESCRIPTIONS["OnroadScreenSleepTimeout"]),
+      buttons=[lambda: tr("No"), lambda: tr("2s"), lambda: tr("3s"), lambda: tr("5s"), lambda: tr("10s")],
+      button_width=100,
+      callback=self._set_onroad_screen_sleep_timeout,
+      selected_index=timeout_index,
+      icon="eye_closed.png"
+    )
+
     self._toggles = {}
     self._locked_toggles = set()
     for param, (title, desc, icon, needs_restart) in self._toggle_defs.items():
@@ -134,6 +156,10 @@ class TogglesLayout(Widget):
       # insert longitudinal personality after NDOG toggle
       if param == "DisengageOnAccelerator":
         self._toggles["LongitudinalPersonality"] = self._long_personality_setting
+
+      # insert onroad screen sleep setting after IsMetric toggle
+      if param == "IsMetric":
+        self._toggles["OnroadScreenSleepTimeout"] = self._onroad_screen_sleep_setting
 
     self._update_experimental_mode_icon()
     self._scroller = Scroller(list(self._toggles.values()), line_separator=True, spacing=0)
@@ -242,3 +268,8 @@ class TogglesLayout(Widget):
 
   def _set_longitudinal_personality(self, button_index: int):
     self._params.put("LongitudinalPersonality", button_index)
+
+  def _set_onroad_screen_sleep_timeout(self, button_index: int):
+    TIMEOUT_VALUES = [0, 2, 3, 5, 10]  # Map indices to timeout values in seconds
+    timeout_value = TIMEOUT_VALUES[button_index]
+    self._params.put("OnroadScreenSleepTimeout", timeout_value)

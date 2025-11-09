@@ -177,6 +177,7 @@ class UIState:
 
 class Device:
   def __init__(self):
+    self.params = Params()
     self._ignition = False
     self._interaction_time: float = -1
     self._interactive_timeout_callbacks: list[Callable] = []
@@ -190,7 +191,12 @@ class Device:
 
   def reset_interactive_timeout(self, timeout: int = -1) -> None:
     if timeout == -1:
-      timeout = 10 if ui_state.ignition else 30
+      if ui_state.ignition:
+        # Check if custom onroad timeout is set
+        onroad_timeout = self.params.get("OnroadScreenSleepTimeout", return_default=True) or 0
+        timeout = onroad_timeout if onroad_timeout > 0 else 10
+      else:
+        timeout = 30
     self._interaction_time = time.monotonic() + timeout
 
   def add_interactive_timeout_callback(self, callback: Callable):
@@ -246,7 +252,15 @@ class Device:
         callback()
     self._prev_timed_out = interaction_timeout
 
-    self._set_awake(ui_state.ignition or not interaction_timeout)
+    # Check onroad screen sleep timeout setting
+    onroad_timeout = self.params.get("OnroadScreenSleepTimeout", return_default=True) or 0
+
+    # If onroad_timeout is 0 (disabled), keep screen on when ignition is on
+    # Otherwise, allow screen to sleep based on interaction timeout even when onroad
+    if onroad_timeout == 0:
+      self._set_awake(ui_state.ignition or not interaction_timeout)
+    else:
+      self._set_awake(not interaction_timeout)
 
   def _set_awake(self, on: bool):
     if on != self._awake:
