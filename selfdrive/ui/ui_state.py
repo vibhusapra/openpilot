@@ -216,19 +216,36 @@ class Device:
 
   def _update_brightness(self):
     clipped_brightness = self._offroad_brightness
+    use_filter = True
 
-    if ui_state.started and ui_state.light_sensor >= 0:
-      clipped_brightness = ui_state.light_sensor
+    if ui_state.started:
+      # Check onroad brightness setting
+      brightness_percent = self.params.get("OnroadBrightnessPercent", return_default=True) or 0
 
-      # CIE 1931 - https://www.photonstophotos.net/GeneralTopics/Exposure/Psychometric_Lightness_and_Gamma.htm
-      if clipped_brightness <= 8:
-        clipped_brightness = clipped_brightness / 903.3
-      else:
-        clipped_brightness = ((clipped_brightness + 16.0) / 116.0) ** 3.0
+      if brightness_percent > 0:
+        # Fixed brightness mode (0.1%, 0.5%, or 1%)
+        # Skip filter and set brightness directly to avoid rounding to 0
+        brightness = brightness_percent / 10.0
+        use_filter = False
+      elif ui_state.light_sensor >= 0:
+        # Auto mode - use light sensor
+        clipped_brightness = ui_state.light_sensor
 
-      clipped_brightness = float(np.clip(100 * clipped_brightness, 10, 100))
+        # CIE 1931 - https://www.photonstophotos.net/GeneralTopics/Exposure/Psychometric_Lightness_and_Gamma.htm
+        if clipped_brightness <= 8:
+          clipped_brightness = clipped_brightness / 903.3
+        else:
+          clipped_brightness = ((clipped_brightness + 16.0) / 116.0) ** 3.0
 
-    brightness = round(self._brightness_filter.update(clipped_brightness))
+        clipped_brightness = float(np.clip(100 * clipped_brightness, 10, 100))
+
+    if use_filter:
+      brightness = round(self._brightness_filter.update(clipped_brightness))
+    else:
+      # For fixed brightness modes, don't round - keep fractional values
+      # Hardware layer will convert to integer when applying
+      brightness = brightness
+
     if not self._awake:
       brightness = 0
 

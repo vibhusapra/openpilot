@@ -35,6 +35,10 @@ DESCRIPTIONS = {
     "Configure when the screen turns off while driving. Choose how long to wait after the last touch before the screen sleeps. " +
     "Touch the screen to wake it up. Set to 'No' to keep the screen always on while driving."
   ),
+  "OnroadBrightnessPercent": tr_noop(
+    "Set screen brightness while driving. Auto uses the light sensor (10-100% range). " +
+    "Fixed percentages (0.1%, 0.5%, 1%) provide very dim brightness to reduce distraction at night."
+  ),
 }
 
 
@@ -124,6 +128,24 @@ class TogglesLayout(Widget):
       icon="eye_closed.png"
     )
 
+    # Onroad brightness selector
+    BRIGHTNESS_VALUES = [0, 1, 5, 10]  # 0=Auto, 1=0.1%, 5=0.5%, 10=1% (tenths of percent)
+    current_brightness = self._params.get("OnroadBrightnessPercent", return_default=True)
+    try:
+      brightness_index = BRIGHTNESS_VALUES.index(current_brightness)
+    except (ValueError, TypeError):
+      brightness_index = 0  # Default to "Auto" if invalid value
+
+    self._onroad_brightness_setting = multiple_button_item(
+      lambda: tr("Onroad Brightness"),
+      lambda: tr(DESCRIPTIONS["OnroadBrightnessPercent"]),
+      buttons=[lambda: tr("Auto"), lambda: tr("0.1%"), lambda: tr("0.5%"), lambda: tr("1%")],
+      button_width=135,
+      callback=self._set_onroad_brightness,
+      selected_index=brightness_index,
+      icon="monitoring.png"
+    )
+
     self._toggles = {}
     self._locked_toggles = set()
     for param, (title, desc, icon, needs_restart) in self._toggle_defs.items():
@@ -160,6 +182,7 @@ class TogglesLayout(Widget):
       # insert onroad screen sleep setting after IsMetric toggle
       if param == "IsMetric":
         self._toggles["OnroadScreenSleepTimeout"] = self._onroad_screen_sleep_setting
+        self._toggles["OnroadBrightnessPercent"] = self._onroad_brightness_setting
 
     self._update_experimental_mode_icon()
     self._scroller = Scroller(list(self._toggles.values()), line_separator=True, spacing=0)
@@ -273,3 +296,8 @@ class TogglesLayout(Widget):
     TIMEOUT_VALUES = [0, 2, 3, 5, 10]  # Map indices to timeout values in seconds
     timeout_value = TIMEOUT_VALUES[button_index]
     self._params.put("OnroadScreenSleepTimeout", timeout_value)
+
+  def _set_onroad_brightness(self, button_index: int):
+    BRIGHTNESS_VALUES = [0, 1, 5, 10]  # 0=Auto, 1=0.1%, 5=0.5%, 10=1% (tenths of percent)
+    brightness_value = BRIGHTNESS_VALUES[button_index]
+    self._params.put("OnroadBrightnessPercent", brightness_value)
