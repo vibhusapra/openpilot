@@ -261,8 +261,25 @@ class Device:
     ignition_just_turned_on = ui_state.ignition and not self._ignition
     self._ignition = ui_state.ignition
 
-    if ignition_just_turned_off or ignition_just_turned_on or any(ev.left_down for ev in gui_app.mouse_events):
+    # Only reset timeout on user touch, not on ignition changes to prevent screen wake
+    if any(ev.left_down for ev in gui_app.mouse_events):
       self.reset_interactive_timeout()
+
+    # Update timeout duration when ignition changes without resetting the timer
+    # This ensures correct timeout is used without waking the screen
+    if ignition_just_turned_on or ignition_just_turned_off:
+      # Only update if screen is currently awake, otherwise keep existing timeout to stay asleep
+      if self._awake:
+        # Get the appropriate timeout for current ignition state
+        if ui_state.ignition:
+          onroad_timeout = self.params.get("OnroadScreenSleepTimeout", return_default=True) or 0
+          # If onroad timeout is 0 (disabled), use a very large value to keep screen on
+          # The actual wake logic (line 293-294) will keep it on while ignition is on
+          new_timeout = onroad_timeout if onroad_timeout > 0 else 86400  # 24 hours
+        else:
+          new_timeout = 10
+
+        self._interaction_time = time.monotonic() + new_timeout
 
     interaction_timeout = time.monotonic() > self._interaction_time
     if interaction_timeout and not self._prev_timed_out:
