@@ -96,4 +96,5 @@ Pipfile
 .history
 .ionide
 *.csv
-route_analysis
+route_analysis/*.csv
+route_analysis/*.csv.gz
