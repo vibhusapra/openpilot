@@ -35,8 +35,8 @@ from opendbc.car import structs, Bus
 # Messages to capture raw bytes from (message_id, bus, name)
 RAW_MESSAGES = [
   (0x58, 0, "LCA"),
-  (0x57, 0, "VCU1_PSCM_CONTROL"),
-  (0x69, 0, "VCU1"),  # Contains PILOT_ASSIST_ENGAGED
+  (0x57, 0, "LCA_3"),
+  (0x69, 0, "LCA_2"),  # Contains PILOT_ASSIST_ENGAGED
   (0x16, 2, "PSCM"),
   (0x17, 2, "PSCM_RELATED"),
   (0x15, 2, "DRIVER_INPUT"),
@@ -48,12 +48,12 @@ def bytes_to_hex(data: bytes) -> str:
   return data.hex().upper()
 
 
-def parse_pilot_assist_engaged(vcu1_bytes: bytes) -> bool:
+def parse_pilot_assist_engaged(lca_2_bytes: bytes) -> bool:
   """
-  Parse PILOT_ASSIST_ENGAGED from VCU1 message.
-  VCU1 message ID 0x69, PILOT_ASSIST_ENGAGED is bit 12 (LSB 0).
+  Parse PILOT_ASSIST_ENGAGED from LCA_2 message.
+  LCA_2 message ID 0x69, PILOT_ASSIST_ENGAGED is bit 12 (LSB 0).
   """
-  if len(vcu1_bytes) < 2:
+  if len(lca_2_bytes) < 2:
     return False
 
   # Bit 12 is in byte 1, bit 4 (bytes are little-endian, bit 12 = byte_offset 1, bit 4)
@@ -61,10 +61,10 @@ def parse_pilot_assist_engaged(vcu1_bytes: bytes) -> bool:
   byte_index = 12 // 8
   bit_in_byte = 12 % 8
 
-  if len(vcu1_bytes) <= byte_index:
+  if len(lca_2_bytes) <= byte_index:
     return False
 
-  return bool((vcu1_bytes[byte_index] >> bit_in_byte) & 1)
+  return bool((lca_2_bytes[byte_index] >> bit_in_byte) & 1)
 
 
 def parse_route(route_id: str, break_on_engaged: bool = False) -> pd.DataFrame:
@@ -185,15 +185,15 @@ def parse_route(route_id: str, break_on_engaged: bool = False) -> pd.DataFrame:
 
       # Get raw message bytes (latest values - no expensive timestamp search!)
       lca_bytes = bytes_to_hex(latest_raw_messages.get("LCA", b''))
-      vcu1_pscm_control_bytes = bytes_to_hex(latest_raw_messages.get("VCU1_PSCM_CONTROL", b''))
-      vcu1_bytes_hex = bytes_to_hex(latest_raw_messages.get("VCU1", b''))
+      lca_3_bytes = bytes_to_hex(latest_raw_messages.get("LCA_3", b''))
+      lca_2_bytes_hex = bytes_to_hex(latest_raw_messages.get("LCA_2", b''))
       pscm_bytes = bytes_to_hex(latest_raw_messages.get("PSCM", b''))
       pscm_related_bytes = bytes_to_hex(latest_raw_messages.get("PSCM_RELATED", b''))
       driver_input_bytes = bytes_to_hex(latest_raw_messages.get("DRIVER_INPUT", b''))
 
-      # Parse PILOT_ASSIST_ENGAGED from VCU1 raw bytes
-      vcu1_raw = latest_raw_messages.get("VCU1", b'')
-      pilot_assist_engaged = parse_pilot_assist_engaged(vcu1_raw)
+      # Parse PILOT_ASSIST_ENGAGED from LCA_2 raw bytes
+      lca_2_raw = latest_raw_messages.get("LCA_2", b'')
+      pilot_assist_engaged = parse_pilot_assist_engaged(lca_2_raw)
 
       # Build row
       row = {
@@ -214,8 +214,8 @@ def parse_route(route_id: str, break_on_engaged: bool = False) -> pd.DataFrame:
         # 'wheel_speed_rl': wheel_speed_rl,
         # 'wheel_speed_rr': wheel_speed_rr,
         'LCA_raw_hex': lca_bytes,
-        'VCU1_PSCM_CONTROL_raw_hex': vcu1_pscm_control_bytes,
-        'VCU1_raw_hex': vcu1_bytes_hex,
+        'LCA_3_raw_hex': lca_3_bytes,
+        'LCA_2_raw_hex': lca_2_bytes_hex,
         'PSCM_raw_hex': pscm_bytes,
         'PSCM_RELATED_raw_hex': pscm_related_bytes,
         'DRIVER_INPUT_raw_hex': driver_input_bytes,
