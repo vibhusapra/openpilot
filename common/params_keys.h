@@ -132,4 +132,5 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"UptimeOffroad", {PERSISTENT, FLOAT, "0.0"}},
     {"UptimeOnroad", {PERSISTENT, FLOAT, "0.0"}},
     {"Version", {PERSISTENT, STRING}},
+    {"VolvoDoubleTapCruise", {PERSISTENT, BOOL, "0"}},
 };

@@ -39,6 +39,7 @@ DESCRIPTIONS = {
     "Set screen brightness while driving. Auto uses the light sensor (10-100% range). " +
     "Fixed percentages (0.1%, 0.5%, 1%) provide very dim brightness to reduce distraction at night."
   ),
+  "VolvoDoubleTapCruise": tr_noop("Engage openpilot when cruise control is double-tapped on Volvo cars."),
 }
 
 
@@ -96,6 +97,12 @@ class TogglesLayout(Widget):
         lambda: tr("Use Metric System"),
         DESCRIPTIONS["IsMetric"],
         "metric.png",
+        False,
+      ),
+      "VolvoDoubleTapCruise": (
+        lambda: tr("Engage openpilot on double-tap cruise"),
+        DESCRIPTIONS["VolvoDoubleTapCruise"],
+        "chffr_wheel.png",
         False,
       ),
     }
