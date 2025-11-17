@@ -40,6 +40,7 @@ DESCRIPTIONS = {
     "Fixed percentages (0.1%, 0.5%, 1%) provide very dim brightness to reduce distraction at night."
   ),
   "VolvoDoubleTapCruise": tr_noop("Engage openpilot when cruise control is double-tapped on Volvo cars."),
+  "VolvoSpoofPAHandsOnWheel": tr_noop("Spoof hands-on-wheel signals in PSCM message from party bus to main bus when stock Pilot Assist is engaged."),
 }
 
 
@@ -102,6 +103,12 @@ class TogglesLayout(Widget):
       "VolvoDoubleTapCruise": (
         lambda: tr("Engage openpilot on double-tap cruise"),
         DESCRIPTIONS["VolvoDoubleTapCruise"],
+        "chffr_wheel.png",
+        False,
+      ),
+      "VolvoSpoofPAHandsOnWheel": (
+        lambda: tr("Pilot Assist engaged: Spoof hands on steering wheel"),
+        DESCRIPTIONS["VolvoSpoofPAHandsOnWheel"],
         "chffr_wheel.png",
         False,
       ),
