@@ -104,13 +104,13 @@ class TogglesLayout(Widget):
         lambda: tr("Engage openpilot on double-tap cruise"),
         DESCRIPTIONS["VolvoDoubleTapCruise"],
         "chffr_wheel.png",
-        False,
+        True,
       ),
       "VolvoSpoofPAHandsOnWheel": (
         lambda: tr("Pilot Assist engaged: Spoof hands on steering wheel"),
         DESCRIPTIONS["VolvoSpoofPAHandsOnWheel"],
         "chffr_wheel.png",
-        False,
+        True,
       ),
     }
 
