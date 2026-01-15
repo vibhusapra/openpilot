@@ -290,7 +290,13 @@ class Device:
         callback()
     self._prev_timed_out = interaction_timeout
 
-    self._set_awake(ui_state.ignition or not interaction_timeout or PC)
+    # Screen stays awake if:
+    # - On PC (always on)
+    # - Not timed out yet
+    # - Onroad with screen sleep disabled (OnroadScreenSleepTimeout == 0 means "No" / always on)
+    onroad_screen_sleep_timeout = self.params.get("OnroadScreenSleepTimeout", return_default=True) or 0
+    onroad_always_awake = ui_state.ignition and onroad_screen_sleep_timeout == 0
+    self._set_awake(onroad_always_awake or not interaction_timeout or PC)
 
   def _set_awake(self, on: bool):
     if on != self._awake:
