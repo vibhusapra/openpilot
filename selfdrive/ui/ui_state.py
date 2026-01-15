@@ -185,6 +185,7 @@ class UIState:
 
 class Device:
   def __init__(self):
+    self.params = Params()
     self._ignition = False
     self._interaction_time: float = -1
     self._override_interactive_timeout: int | None = None
@@ -211,8 +212,13 @@ class Device:
     if self._override_interactive_timeout is not None:
       return self._override_interactive_timeout
 
-    ignition_timeout = 10 if gui_app.big_ui() else 5
-    return ignition_timeout if ui_state.ignition else 30
+    if ui_state.ignition:
+      # Check if custom onroad timeout is set
+      onroad_timeout = self.params.get("OnroadScreenSleepTimeout", return_default=True) or 0
+      if onroad_timeout > 0:
+        return onroad_timeout
+      return 10 if gui_app.big_ui() else 5
+    return 30
 
   def _reset_interactive_timeout(self) -> None:
     self._interaction_time = time.monotonic() + self.interactive_timeout
@@ -235,19 +241,32 @@ class Device:
 
   def _update_brightness(self):
     clipped_brightness = self._offroad_brightness
+    use_filter = True
 
-    if ui_state.started and ui_state.light_sensor >= 0:
-      clipped_brightness = ui_state.light_sensor
+    if ui_state.started:
+      # Check onroad brightness setting
+      brightness_percent = self.params.get("OnroadBrightnessPercent", return_default=True) or 0
 
-      # CIE 1931 - https://www.photonstophotos.net/GeneralTopics/Exposure/Psychometric_Lightness_and_Gamma.htm
-      if clipped_brightness <= 8:
-        clipped_brightness = clipped_brightness / 903.3
-      else:
-        clipped_brightness = ((clipped_brightness + 16.0) / 116.0) ** 3.0
+      if brightness_percent > 0:
+        # Fixed brightness mode - skip filter and set brightness directly
+        clipped_brightness = float(brightness_percent)
+        use_filter = False
+      elif ui_state.light_sensor >= 0:
+        # Auto mode - use light sensor
+        clipped_brightness = ui_state.light_sensor
 
-      clipped_brightness = float(np.interp(clipped_brightness, [0, 1], [30, 100]))
+        # CIE 1931 - https://www.photonstophotos.net/GeneralTopics/Exposure/Psychometric_Lightness_and_Gamma.htm
+        if clipped_brightness <= 8:
+          clipped_brightness = clipped_brightness / 903.3
+        else:
+          clipped_brightness = ((clipped_brightness + 16.0) / 116.0) ** 3.0
 
-    brightness = round(self._brightness_filter.update(clipped_brightness))
+        clipped_brightness = float(np.interp(clipped_brightness, [0, 1], [30, 100]))
+
+    if use_filter:
+      brightness = round(self._brightness_filter.update(clipped_brightness))
+    else:
+      brightness = round(clipped_brightness)
     if not self._awake:
       brightness = 0
 

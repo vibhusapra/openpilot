@@ -109,7 +109,15 @@ class Car:
       self.CI, self.CP = CI, CI.CP
       self.RI = RI
 
-    self.CP.alternativeExperience = 0
+    # Set Volvo-specific feature flags (use high bits to avoid any conflicts with standard ALTERNATIVE_EXPERIENCE flags)
+    # Standard flags use low bits: DISABLE_STOCK_AEB=2, RAISE_LONGITUDINAL_LIMITS_TO_ISO_MAX=8, ALLOW_AEB=16
+    # Volvo uses high bits to ensure no current or future conflicts
+    if self.CP.carFingerprint.startswith("VOLVO"):
+      if self.params.get_bool("VolvoDoubleTapCruise"):
+        self.CP.alternativeExperience |= 64   # Bit 6: double-tap cruise
+      if self.params.get_bool("VolvoSpoofPAHandsOnWheel"):
+        self.CP.alternativeExperience |= 128  # Bit 7: spoof PA hands on wheel
+
     openpilot_enabled_toggle = self.params.get_bool("OpenpilotEnabledToggle")
     controller_available = self.CI.CC is not None and openpilot_enabled_toggle and not self.CP.dashcamOnly
     self.CP.passive = not controller_available or self.CP.dashcamOnly
