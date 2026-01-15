@@ -278,12 +278,10 @@ class Device:
 
   def _update_wakefulness(self):
     # Handle interactive timeout
-    ignition_just_turned_on = ui_state.ignition and not self._ignition
     self._ignition = ui_state.ignition
 
-    # Reset timeout on touch or when ignition turns ON (to apply onroad timeout setting)
-    # Don't reset when ignition turns OFF (to preserve sleep state)
-    if ignition_just_turned_on or any(ev.left_down for ev in gui_app.mouse_events):
+    # Only reset timeout on touch, not on ignition transitions (to preserve sleep state)
+    if any(ev.left_down for ev in gui_app.mouse_events):
       self._reset_interactive_timeout()
 
     interaction_timeout = time.monotonic() > self._interaction_time
