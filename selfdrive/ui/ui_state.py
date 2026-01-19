@@ -191,6 +191,7 @@ class Device:
     self._override_interactive_timeout: int | None = None
     self._interactive_timeout_callbacks: list[Callable] = []
     self._prev_timed_out = False
+    self._screen_off_by_timeout = False  # Tracks if screen was put to sleep by timeout (only cleared by touch)
     self._awake: bool = True
 
     self._offroad_brightness: int = BACKLIGHT_OFFROAD
@@ -278,19 +279,48 @@ class Device:
 
   def _update_wakefulness(self):
     # Handle interactive timeout
+    ignition_just_turned_on = ui_state.ignition and not self._ignition
     ignition_just_turned_off = not ui_state.ignition and self._ignition
     self._ignition = ui_state.ignition
 
-    if ignition_just_turned_off or any(ev.left_down for ev in gui_app.mouse_events):
+    touched = any(ev.left_down for ev in gui_app.mouse_events)
+
+    # Touch wakes screen and resets timeout
+    if touched:
+      self._screen_off_by_timeout = False
+      self._reset_interactive_timeout()
+
+    # When going onroad, immediately turn off screen (unless "No" sleep selected)
+    if ignition_just_turned_on:
+      onroad_timeout = self.params.get("OnroadScreenSleepTimeout", return_default=True) or 0
+      if onroad_timeout > 0:
+        self._screen_off_by_timeout = True
+      self._reset_interactive_timeout()
+
+    # When going offroad, reset timeout to offroad value (stock behavior)
+    if ignition_just_turned_off:
       self._reset_interactive_timeout()
 
     interaction_timeout = time.monotonic() > self._interaction_time
+
+    # Check if onroad with sleep disabled (stock behavior - always on while driving)
+    onroad_screen_sleep_timeout = self.params.get("OnroadScreenSleepTimeout", return_default=True) or 0
+    onroad_always_awake = ui_state.ignition and onroad_screen_sleep_timeout == 0
+
+    # When timeout expires, turn off screen (only cleared by touch)
+    # But don't set if onroad_always_awake - that's stock behavior where screen stays on
     if interaction_timeout and not self._prev_timed_out:
+      if not onroad_always_awake:
+        self._screen_off_by_timeout = True
       for callback in self._interactive_timeout_callbacks:
         callback()
     self._prev_timed_out = interaction_timeout
 
-    self._set_awake(ui_state.ignition or not interaction_timeout or PC)
+    # Screen stays awake if:
+    # - On PC (always on)
+    # - Not put to sleep by timeout or ignition transition (only touch clears this)
+    # - Onroad with screen sleep disabled (OnroadScreenSleepTimeout == 0 means "No" / always on)
+    self._set_awake(onroad_always_awake or not self._screen_off_by_timeout or PC)
 
   def _set_awake(self, on: bool):
     if on != self._awake:
