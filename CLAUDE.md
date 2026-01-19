@@ -6,6 +6,67 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 openpilot is an operating system for robotics, currently used as an advanced driver assistance system for 300+ supported cars. It's a distributed, real-time autonomous driving system built on a message-passing architecture with hardware-enforced safety.
 
+## About This Fork
+
+**This is a development fork for Volvo CMA platform support (Polestar 2, Volvo XC40 Recharge, C40 Recharge, etc.).**
+
+### Key Differences from Upstream openpilot
+
+- **Main branch**: `master-cma-dev3` (Paper's latest development branch with critical safety fixes)
+- **opendbc submodule**: Points to `vibhusapra/opendbc` branch `master-cma-dev3` containing Volvo implementation + Polestar 2 support
+- **Status**: Work in progress - based on Paper's proven Volvo CMA implementation with safety improvements
+
+### What's New in master-cma-dev3
+
+This fork is based on Paper's `master-cma-dev3` branch which includes critical safety and stability improvements:
+
+- **ESC intervention detection**: Monitors Electronic Stability Control activation and safely disengages openpilot when ESC intervenes
+- **LCA_2 checksum fix**: Corrects checksum calculation for stability event messages, preventing dash errors
+- **Counter management**: Generates CAN message counters instead of forwarding them, preventing synchronization issues
+- **LCA_4 crash fix**: Resolves a bug that could cause PSCM (Power Steering Control Module) crashes
+- **tfife's steering improvements**: Enhanced steering feel and response from community testing
+- **47+ opendbc commits**: Extensive refinements from Paper's real-world testing with XC40 Recharge
+
+**Why dev3 matters**: The original `master-cma` branch worked but had stability issues in edge cases (ESC events, stability control activation). The dev3 branch addresses these critical safety concerns based on extensive testing.
+
+### Volvo-Specific Features
+
+This fork includes custom features for Volvo CMA vehicles:
+
+- **Torque parameter learning**: Volvo added to `ALLOWED_CARS` in `selfdrive/car/torqued.py` for automatic torque parameter learning
+- **VolvoDoubleTapCruise**: UI toggle to engage openpilot on double-tap of cruise control stalk (instead of single tap)
+- **VolvoSpoofPAHandsOnWheel**: UI toggle to spoof hands-on-wheel detection, enabling openpilot to work alongside stock Pilot Assist
+
+### Custom Development Tools
+
+**route_analysis/analyze_lca_messages.py**
+- Reverse engineering tool for Volvo CMA LCA (Lane Centering Assist) protocol
+- Analyzes openpilot routes to extract and decode CAN messages
+- Parses PSCM, LCA, LCA_2, LCA_3 messages and vehicle signals
+- Usage: `python route_analysis/analyze_lca_messages.py <route_id>`
+- Helps identify pilot assist engagement flags and control signals
+
+**selfdrive/debug/can_print_changes_2.py**
+- Enhanced CAN message comparison tool for reverse engineering
+- Compares CAN messages between routes to identify state-dependent signals
+- Filters out counters and checksums to reveal meaningful bit changes
+- Useful for finding engagement flags, control messages, and vehicle state indicators
+
+### Working with the opendbc Submodule
+
+The Volvo car interface code lives in the opendbc submodule:
+
+- **Submodule location**: `opendbc_repo/` (symlinked from `opendbc/`)
+- **Submodule repository**: `vibhusapra/opendbc` branch `master-cma-dev3` (forked from `paper5590/opendbc`)
+- **Volvo implementation**: `opendbc_repo/car/volvo/`
+  - `interface.py`: CarInterface implementation
+  - `carstate.py`: CAN message parsing → CarState
+  - `carcontroller.py`: CarControl → CAN messages
+  - `values.py`: Supported models, fingerprints (includes POLESTAR_2)
+- **Update submodule**: `cd opendbc_repo && git pull origin master-cma-dev3`
+
+**Important**: All Volvo-specific vehicle interface changes must be made in the opendbc submodule, not in this repository.
+
 ## Build System
 
 **Primary build tool**: SCons (not Make)
@@ -216,7 +277,7 @@ To add a new car, create implementations in opendbc following the existing manuf
 
 - `DT_CTRL = 0.01` (100 Hz control loop)
 - `DT_MDL = 0.05` (20 Hz model inference)
-- Main branch: `master`
+- Main branch: `master-cma-dev3` (based on Paper's latest dev branch with safety fixes)
 - Device target: comma 3X (Qualcomm Snapdragon with Adreno GPU)
 
 ## Development Tips
@@ -231,8 +292,11 @@ To add a new car, create implementations in opendbc following the existing manuf
 
 openpilot prioritizes: **safety > stability > quality > features** (in that order)
 
-- Pull requests against `master` branch
-- Must pass CI tests (GitHub Actions)
-- Check `docs/CONTRIBUTING.md` for full guidelines
-- Simple, well-tested PRs are most likely to be merged
-- Large refactors or style changes are generally not accepted
+**This is a development fork** for Volvo CMA platform support:
+
+- Development happens on `master-cma-dev3` branch (Paper's latest development branch)
+- This fork is not intended to merge back to upstream commaai/openpilot
+- Focus is on developing a working Volvo CMA port as a standalone fork
+- Pull requests should be made against `master-cma-dev3` branch
+- Volvo-specific vehicle interface changes belong in the opendbc submodule (`vibhusapra/opendbc`)
+- Must pass CI tests (GitHub Actions) when available
