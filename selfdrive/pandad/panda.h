@@ -11,8 +11,13 @@
 
 #include "cereal/gen/cpp/car.capnp.h"
 #include "cereal/gen/cpp/log.capnp.h"
+
+// Include panda C headers with extern "C" for proper linkage
+extern "C" {
 #include "panda/board/health.h"
 #include "panda/board/can.h"
+}
+
 #include "selfdrive/pandad/panda_comms.h"
 
 #define USB_TX_SOFT_LIMIT   (0x100U)
@@ -24,6 +29,11 @@
 #define CAN_RETURNED_BUS_OFFSET 0x80U
 
 #define PANDA_BUS_OFFSET 4
+
+// Missing definitions from panda/board/can.h
+#ifndef PANDA_BUS_CNT
+#define PANDA_BUS_CNT 3U
+#endif
 
 struct __attribute__((packed)) can_header {
   uint8_t reserved : 1;
