@@ -113,10 +113,18 @@ class Car:
 
     # Set Volvo-specific feature flags (use high bits to avoid conflicts)
     if self.CP.carFingerprint.startswith("VOLVO") or self.CP.carFingerprint.startswith("POLESTAR"):
-      if self.params.get_bool("VolvoDoubleTapCruise"):
-        self.CP.alternativeExperience |= 64   # Bit 6: double-tap cruise
-      if self.params.get_bool("VolvoSpoofPAHandsOnWheel"):
-        self.CP.alternativeExperience |= 128  # Bit 7: spoof PA hands on wheel
+      # TODO: Add these parameters to common/params.cc if needed
+      # For now, default to disabled to avoid crashes
+      try:
+        if self.params.get_bool("VolvoDoubleTapCruise"):
+          self.CP.alternativeExperience |= 64   # Bit 6: double-tap cruise
+      except:
+        pass  # Parameter doesn't exist yet
+      try:
+        if self.params.get_bool("VolvoSpoofPAHandsOnWheel"):
+          self.CP.alternativeExperience |= 128  # Bit 7: spoof PA hands on wheel
+      except:
+        pass  # Parameter doesn't exist yet
 
     openpilot_enabled_toggle = self.params.get_bool("OpenpilotEnabledToggle")
     controller_available = self.CI.CC is not None and openpilot_enabled_toggle and not self.CP.dashcamOnly
