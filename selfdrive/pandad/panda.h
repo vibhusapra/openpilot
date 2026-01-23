@@ -15,7 +15,7 @@
 // Include panda C headers with extern "C" for proper linkage
 extern "C" {
 #include "panda/board/health.h"
-#include "panda/board/can.h"
+#include "panda/board/can_declarations.h"
 }
 
 #include "selfdrive/pandad/panda_comms.h"
