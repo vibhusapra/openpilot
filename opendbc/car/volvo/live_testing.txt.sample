@@ -1,0 +1,25 @@
+# Live testing configuration for Volvo CMA steering
+# Copy to /data/openpilot/live_testing.txt and modify values
+#
+# Syntax:
+#   Global keys: key=value (e.g. lat_active=True)
+#   Message overrides: message.signal=value (e.g. lca_5.lca_turn_bits=128)
+#
+# Signal names are case-insensitive (converted to UPPERCASE for DBC)
+
+# Global overrides
+lat_active=True
+
+# Steering angle override (degrees, positive=left, negative=right)
+# Overrides angle for all messages (LCA, LCA_3, LCA_4, LCA_5)
+#apply_angle=5.0
+
+# LCA_5 message (0x67) - Primary angle control
+# Any DBC signal can be overridden
+#lca_5.lca_turn_bits=128    # -> LCA_TURN_BITS: 128=left neutral, 255=right neutral, 186=inactive
+#lca_5.lca_5_steer=0        # -> LCA_5_STEER: Angle encoding (0-255)
+#lca_5.wheel_speed_1=1000   # -> WHEEL_SPEED_1
+
+# LCA message (0x58) - Secondary angle control
+#lca.lca_steer=0            # -> LCA_STEER signal (0-255)
+#lca.curve_right=0          # -> CURVE_RIGHT signal: 0=left/neutral, 63=right

@@ -1,0 +1,9 @@
+ModuleNotFoundError: No module named 'numpy':
+  File "/Users/vibhusapra/projects/openpilot_v010_polestar2/SConstruct", line 6:
+    import numpy as np
+=== BUILD START Thu Jan 22 15:33:41 PST 2026 ===
+scons: Reading SConscript files ...
+ModuleNotFoundError: No module named 'numpy':
+  File "/Users/vibhusapra/projects/openpilot_v010_polestar2/SConstruct", line 6:
+    import numpy as np
+=== BUILD END Thu Jan 22 15:33:41 PST 2026 ===

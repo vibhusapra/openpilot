@@ -1,0 +1,186 @@
+Starting build with 12 cores...
+===============================================
+scons: Reading SConscript files ...
+scons: done reading SConscript files.
+scons: Building targets ...
+capnpc --src-prefix=cereal cereal/log.capnp cereal/car.capnp cereal/legacy.capnp cereal/custom.capnp -o c++:cereal/gen/cpp/
+python3 cereal/services.py > cereal/services.h
+clang++ -o cereal/messaging/msgq_to_zmq.o -c -std=c++1z -DGL_SILENCE_DEPRECATION -g -fPIC -O2 -Wunused -Werror -Wshadow -Wno-unknown-warning-option -Wno-inconsistent-missing-override -Wno-c99-designator -Wno-reorder-init-list -Wno-vla-cxx-extension -DGL_SILENCE_DEPRECATION -I/opt/homebrew/include -I/opt/homebrew/opt/openssl@3.0/include -I. -Ithird_party/acados/include -Ithird_party/acados/include/blasfeo/include -Ithird_party/acados/include/hpipm/include -Ithird_party/catch2/include -Ithird_party/libyuv/include -Ithird_party/json11 -Ithird_party/linux/include -Ithird_party -Imsgq cereal/messaging/msgq_to_zmq.cc
+clang++ -o msgq_repo/msgq/ipc.os -c -std=c++1z -DGL_SILENCE_DEPRECATION -DSWAGLOG="\"common/swaglog.h\"" -g -fPIC -O2 -Wunused -Werror -Wshadow -Wno-unknown-warning-option -Wno-inconsistent-missing-override -Wno-c99-designator -Wno-reorder-init-list -Wno-vla-cxx-extension -DGL_SILENCE_DEPRECATION -fPIC -I/opt/homebrew/include -I/opt/homebrew/opt/openssl@3.0/include -I. -Ithird_party/acados/include -Ithird_party/acados/include/blasfeo/include -Ithird_party/acados/include/hpipm/include -Ithird_party/catch2/include -Ithird_party/libyuv/include -Ithird_party/json11 -Ithird_party/linux/include -Ithird_party -Imsgq msgq_repo/msgq/ipc.cc
+clang++ -o msgq_repo/msgq/event.os -c -std=c++1z -DGL_SILENCE_DEPRECATION -DSWAGLOG="\"common/swaglog.h\"" -g -fPIC -O2 -Wunused -Werror -Wshadow -Wno-unknown-warning-option -Wno-inconsistent-missing-override -Wno-c99-designator -Wno-reorder-init-list -Wno-vla-cxx-extension -DGL_SILENCE_DEPRECATION -fPIC -I/opt/homebrew/include -I/opt/homebrew/opt/openssl@3.0/include -I. -Ithird_party/acados/include -Ithird_party/acados/include/blasfeo/include -Ithird_party/acados/include/hpipm/include -Ithird_party/catch2/include -Ithird_party/libyuv/include -Ithird_party/json11 -Ithird_party/linux/include -Ithird_party -Imsgq msgq_repo/msgq/event.cc
+clang++ -o msgq_repo/msgq/impl_zmq.os -c -std=c++1z -DGL_SILENCE_DEPRECATION -DSWAGLOG="\"common/swaglog.h\"" -g -fPIC -O2 -Wunused -Werror -Wshadow -Wno-unknown-warning-option -Wno-inconsistent-missing-override -Wno-c99-designator -Wno-reorder-init-list -Wno-vla-cxx-extension -DGL_SILENCE_DEPRECATION -fPIC -I/opt/homebrew/include -I/opt/homebrew/opt/openssl@3.0/include -I. -Ithird_party/acados/include -Ithird_party/acados/include/blasfeo/include -Ithird_party/acados/include/hpipm/include -Ithird_party/catch2/include -Ithird_party/libyuv/include -Ithird_party/json11 -Ithird_party/linux/include -Ithird_party -Imsgq msgq_repo/msgq/impl_zmq.cc
+clang++ -o msgq_repo/msgq/impl_msgq.os -c -std=c++1z -DGL_SILENCE_DEPRECATION -DSWAGLOG="\"common/swaglog.h\"" -g -fPIC -O2 -Wunused -Werror -Wshadow -Wno-unknown-warning-option -Wno-inconsistent-missing-override -Wno-c99-designator -Wno-reorder-init-list -Wno-vla-cxx-extension -DGL_SILENCE_DEPRECATION -fPIC -I/opt/homebrew/include -I/opt/homebrew/opt/openssl@3.0/include -I. -Ithird_party/acados/include -Ithird_party/acados/include/blasfeo/include -Ithird_party/acados/include/hpipm/include -Ithird_party/catch2/include -Ithird_party/libyuv/include -Ithird_party/json11 -Ithird_party/linux/include -Ithird_party -Imsgq msgq_repo/msgq/impl_msgq.cc
+clang++ -o msgq_repo/msgq/impl_fake.os -c -std=c++1z -DGL_SILENCE_DEPRECATION -DSWAGLOG="\"common/swaglog.h\"" -g -fPIC -O2 -Wunused -Werror -Wshadow -Wno-unknown-warning-option -Wno-inconsistent-missing-override -Wno-c99-designator -Wno-reorder-init-list -Wno-vla-cxx-extension -DGL_SILENCE_DEPRECATION -fPIC -I/opt/homebrew/include -I/opt/homebrew/opt/openssl@3.0/include -I. -Ithird_party/acados/include -Ithird_party/acados/include/blasfeo/include -Ithird_party/acados/include/hpipm/include -Ithird_party/catch2/include -Ithird_party/libyuv/include -Ithird_party/json11 -Ithird_party/linux/include -Ithird_party -Imsgq msgq_repo/msgq/impl_fake.cc
+clang++ -o msgq_repo/msgq/msgq.os -c -std=c++1z -DGL_SILENCE_DEPRECATION -DSWAGLOG="\"common/swaglog.h\"" -g -fPIC -O2 -Wunused -Werror -Wshadow -Wno-unknown-warning-option -Wno-inconsistent-missing-override -Wno-c99-designator -Wno-reorder-init-list -Wno-vla-cxx-extension -DGL_SILENCE_DEPRECATION -fPIC -I/opt/homebrew/include -I/opt/homebrew/opt/openssl@3.0/include -I. -Ithird_party/acados/include -Ithird_party/acados/include/blasfeo/include -Ithird_party/acados/include/hpipm/include -Ithird_party/catch2/include -Ithird_party/libyuv/include -Ithird_party/json11 -Ithird_party/linux/include -Ithird_party -Imsgq msgq_repo/msgq/msgq.cc
+clang++ -o common/util.o -c -std=c++1z -DGL_SILENCE_DEPRECATION -g -fPIC -O2 -Wunused -Werror -Wshadow -Wno-unknown-warning-option -Wno-inconsistent-missing-override -Wno-c99-designator -Wno-reorder-init-list -Wno-vla-cxx-extension -DGL_SILENCE_DEPRECATION -I/opt/homebrew/include -I/opt/homebrew/opt/openssl@3.0/include -I. -Ithird_party/acados/include -Ithird_party/acados/include/blasfeo/include -Ithird_party/acados/include/hpipm/include -Ithird_party/catch2/include -Ithird_party/libyuv/include -Ithird_party/json11 -Ithird_party/linux/include -Ithird_party -Imsgq common/util.cc
+clang++ -o cereal/messaging/bridge.o -c -std=c++1z -DGL_SILENCE_DEPRECATION -g -fPIC -O2 -Wunused -Werror -Wshadow -Wno-unknown-warning-option -Wno-inconsistent-missing-override -Wno-c99-designator -Wno-reorder-init-list -Wno-vla-cxx-extension -DGL_SILENCE_DEPRECATION -I/opt/homebrew/include -I/opt/homebrew/opt/openssl@3.0/include -I. -Ithird_party/acados/include -Ithird_party/acados/include/blasfeo/include -Ithird_party/acados/include/hpipm/include -Ithird_party/catch2/include -Ithird_party/libyuv/include -Ithird_party/json11 -Ithird_party/linux/include -Ithird_party -Imsgq cereal/messaging/bridge.cc
+clang++ -o common/ratekeeper.o -c -std=c++1z -DGL_SILENCE_DEPRECATION -g -fPIC -O2 -Wunused -Werror -Wshadow -Wno-unknown-warning-option -Wno-inconsistent-missing-override -Wno-c99-designator -Wno-reorder-init-list -Wno-vla-cxx-extension -DGL_SILENCE_DEPRECATION -I/opt/homebrew/include -I/opt/homebrew/opt/openssl@3.0/include -I. -Ithird_party/acados/include -Ithird_party/acados/include/blasfeo/include -Ithird_party/acados/include/hpipm/include -Ithird_party/catch2/include -Ithird_party/libyuv/include -Ithird_party/json11 -Ithird_party/linux/include -Ithird_party -Imsgq common/ratekeeper.cc
+clang++ -o third_party/json11/json11.o -c -std=c++1z -DGL_SILENCE_DEPRECATION -g -fPIC -O2 -Wunused -Werror -Wshadow -Wno-unknown-warning-option -Wno-inconsistent-missing-override -Wno-c99-designator -Wno-reorder-init-list -Wno-vla-cxx-extension -DGL_SILENCE_DEPRECATION -Wno-unqualified-std-cast-call -I/opt/homebrew/include -I/opt/homebrew/opt/openssl@3.0/include -I. -Ithird_party/acados/include -Ithird_party/acados/include/blasfeo/include -Ithird_party/acados/include/hpipm/include -Ithird_party/catch2/include -Ithird_party/libyuv/include -Ithird_party/json11 -Ithird_party/linux/include -Ithird_party -Imsgq third_party/json11/json11.cpp
+clang++ -o cereal/gen/cpp/car.capnp.o -c -std=c++1z -DGL_SILENCE_DEPRECATION -g -fPIC -O2 -Wunused -Werror -Wshadow -Wno-unknown-warning-option -Wno-inconsistent-missing-override -Wno-c99-designator -Wno-reorder-init-list -Wno-vla-cxx-extension -DGL_SILENCE_DEPRECATION -I/opt/homebrew/include -I/opt/homebrew/opt/openssl@3.0/include -I. -Ithird_party/acados/include -Ithird_party/acados/include/blasfeo/include -Ithird_party/acados/include/hpipm/include -Ithird_party/catch2/include -Ithird_party/libyuv/include -Ithird_party/json11 -Ithird_party/linux/include -Ithird_party -Imsgq cereal/gen/cpp/car.capnp.c++
+clang++ -o cereal/messaging/socketmaster.o -c -std=c++1z -DGL_SILENCE_DEPRECATION -g -fPIC -O2 -Wunused -Werror -Wshadow -Wno-unknown-warning-option -Wno-inconsistent-missing-override -Wno-c99-designator -Wno-reorder-init-list -Wno-vla-cxx-extension -DGL_SILENCE_DEPRECATION -I/opt/homebrew/include -I/opt/homebrew/opt/openssl@3.0/include -I. -Ithird_party/acados/include -Ithird_party/acados/include/blasfeo/include -Ithird_party/acados/include/hpipm/include -Ithird_party/catch2/include -Ithird_party/libyuv/include -Ithird_party/json11 -Ithird_party/linux/include -Ithird_party -Imsgq cereal/messaging/socketmaster.cc
+clang++ -o common/params.o -c -std=c++1z -DGL_SILENCE_DEPRECATION -g -fPIC -O2 -Wunused -Werror -Wshadow -Wno-unknown-warning-option -Wno-inconsistent-missing-override -Wno-c99-designator -Wno-reorder-init-list -Wno-vla-cxx-extension -DGL_SILENCE_DEPRECATION -I/opt/homebrew/include -I/opt/homebrew/opt/openssl@3.0/include -I. -Ithird_party/acados/include -Ithird_party/acados/include/blasfeo/include -Ithird_party/acados/include/hpipm/include -Ithird_party/catch2/include -Ithird_party/libyuv/include -Ithird_party/json11 -Ithird_party/linux/include -Ithird_party -Imsgq common/params.cc
+clang++ -o common/swaglog.o -c -std=c++1z -DGL_SILENCE_DEPRECATION -g -fPIC -O2 -Wunused -Werror -Wshadow -Wno-unknown-warning-option -Wno-inconsistent-missing-override -Wno-c99-designator -Wno-reorder-init-list -Wno-vla-cxx-extension -DGL_SILENCE_DEPRECATION -I/opt/homebrew/include -I/opt/homebrew/opt/openssl@3.0/include -I. -Ithird_party/acados/include -Ithird_party/acados/include/blasfeo/include -Ithird_party/acados/include/hpipm/include -Ithird_party/catch2/include -Ithird_party/libyuv/include -Ithird_party/json11 -Ithird_party/linux/include -Ithird_party -Imsgq common/swaglog.cc
+clang++ -o common/watchdog.o -c -std=c++1z -DGL_SILENCE_DEPRECATION -g -fPIC -O2 -Wunused -Werror -Wshadow -Wno-unknown-warning-option -Wno-inconsistent-missing-override -Wno-c99-designator -Wno-reorder-init-list -Wno-vla-cxx-extension -DGL_SILENCE_DEPRECATION -I/opt/homebrew/include -I/opt/homebrew/opt/openssl@3.0/include -I. -Ithird_party/acados/include -Ithird_party/acados/include/blasfeo/include -Ithird_party/acados/include/hpipm/include -Ithird_party/catch2/include -Ithird_party/libyuv/include -Ithird_party/json11 -Ithird_party/linux/include -Ithird_party -Imsgq common/watchdog.cc
+clang++ -o cereal/gen/cpp/log.capnp.o -c -std=c++1z -DGL_SILENCE_DEPRECATION -g -fPIC -O2 -Wunused -Werror -Wshadow -Wno-unknown-warning-option -Wno-inconsistent-missing-override -Wno-c99-designator -Wno-reorder-init-list -Wno-vla-cxx-extension -DGL_SILENCE_DEPRECATION -I/opt/homebrew/include -I/opt/homebrew/opt/openssl@3.0/include -I. -Ithird_party/acados/include -Ithird_party/acados/include/blasfeo/include -Ithird_party/acados/include/hpipm/include -Ithird_party/catch2/include -Ithird_party/libyuv/include -Ithird_party/json11 -Ithird_party/linux/include -Ithird_party -Imsgq cereal/gen/cpp/log.capnp.c++
+clang++ -o cereal/gen/cpp/custom.capnp.o -c -std=c++1z -DGL_SILENCE_DEPRECATION -g -fPIC -O2 -Wunused -Werror -Wshadow -Wno-unknown-warning-option -Wno-inconsistent-missing-override -Wno-c99-designator -Wno-reorder-init-list -Wno-vla-cxx-extension -DGL_SILENCE_DEPRECATION -I/opt/homebrew/include -I/opt/homebrew/opt/openssl@3.0/include -I. -Ithird_party/acados/include -Ithird_party/acados/include/blasfeo/include -Ithird_party/acados/include/hpipm/include -Ithird_party/catch2/include -Ithird_party/libyuv/include -Ithird_party/json11 -Ithird_party/linux/include -Ithird_party -Imsgq cereal/gen/cpp/custom.capnp.c++
+clang++ -o cereal/gen/cpp/legacy.capnp.o -c -std=c++1z -DGL_SILENCE_DEPRECATION -g -fPIC -O2 -Wunused -Werror -Wshadow -Wno-unknown-warning-option -Wno-inconsistent-missing-override -Wno-c99-designator -Wno-reorder-init-list -Wno-vla-cxx-extension -DGL_SILENCE_DEPRECATION -I/opt/homebrew/include -I/opt/homebrew/opt/openssl@3.0/include -I. -Ithird_party/acados/include -Ithird_party/acados/include/blasfeo/include -Ithird_party/acados/include/hpipm/include -Ithird_party/catch2/include -Ithird_party/libyuv/include -Ithird_party/json11 -Ithird_party/linux/include -Ithird_party -Imsgq cereal/gen/cpp/legacy.capnp.c++
+ar rc msgq_repo/libmsgq.a msgq_repo/msgq/ipc.os msgq_repo/msgq/event.os msgq_repo/msgq/impl_zmq.os msgq_repo/msgq/impl_msgq.os msgq_repo/msgq/impl_fake.os msgq_repo/msgq/msgq.os
+clang++ -o common/clutil.o -c -std=c++1z -DGL_SILENCE_DEPRECATION -g -fPIC -O2 -Wunused -Werror -Wshadow -Wno-unknown-warning-option -Wno-inconsistent-missing-override -Wno-c99-designator -Wno-reorder-init-list -Wno-vla-cxx-extension -DGL_SILENCE_DEPRECATION -I/opt/homebrew/include -I/opt/homebrew/opt/openssl@3.0/include -I. -Ithird_party/acados/include -Ithird_party/acados/include/blasfeo/include -Ithird_party/acados/include/hpipm/include -Ithird_party/catch2/include -Ithird_party/libyuv/include -Ithird_party/json11 -Ithird_party/linux/include -Ithird_party -Imsgq common/clutil.cc
+ranlib msgq_repo/libmsgq.a
+cythonize common/params_pyx.pyx
+clang++ -o common/tests/test_runner.o -c -std=c++1z -DGL_SILENCE_DEPRECATION -g -fPIC -O2 -Wunused -Werror -Wshadow -Wno-unknown-warning-option -Wno-inconsistent-missing-override -Wno-c99-designator -Wno-reorder-init-list -Wno-vla-cxx-extension -DGL_SILENCE_DEPRECATION -I/opt/homebrew/include -I/opt/homebrew/opt/openssl@3.0/include -I. -Ithird_party/acados/include -Ithird_party/acados/include/blasfeo/include -Ithird_party/acados/include/hpipm/include -Ithird_party/catch2/include -Ithird_party/libyuv/include -Ithird_party/json11 -Ithird_party/linux/include -Ithird_party -Imsgq common/tests/test_runner.cc
+clang++ -o common/tests/test_params.o -c -std=c++1z -DGL_SILENCE_DEPRECATION -g -fPIC -O2 -Wunused -Werror -Wshadow -Wno-unknown-warning-option -Wno-inconsistent-missing-override -Wno-c99-designator -Wno-reorder-init-list -Wno-vla-cxx-extension -DGL_SILENCE_DEPRECATION -I/opt/homebrew/include -I/opt/homebrew/opt/openssl@3.0/include -I. -Ithird_party/acados/include -Ithird_party/acados/include/blasfeo/include -Ithird_party/acados/include/hpipm/include -Ithird_party/catch2/include -Ithird_party/libyuv/include -Ithird_party/json11 -Ithird_party/linux/include -Ithird_party -Imsgq common/tests/test_params.cc
+clang++ -o common/tests/test_util.o -c -std=c++1z -DGL_SILENCE_DEPRECATION -g -fPIC -O2 -Wunused -Werror -Wshadow -Wno-unknown-warning-option -Wno-inconsistent-missing-override -Wno-c99-designator -Wno-reorder-init-list -Wno-vla-cxx-extension -DGL_SILENCE_DEPRECATION -I/opt/homebrew/include -I/opt/homebrew/opt/openssl@3.0/include -I. -Ithird_party/acados/include -Ithird_party/acados/include/blasfeo/include -Ithird_party/acados/include/hpipm/include -Ithird_party/catch2/include -Ithird_party/libyuv/include -Ithird_party/json11 -Ithird_party/linux/include -Ithird_party -Imsgq common/tests/test_util.cc
+ar rc third_party/libjson11.a third_party/json11/json11.o
+ranlib third_party/libjson11.a
+clang++ -o common/tests/test_swaglog.o -c -std=c++1z -DGL_SILENCE_DEPRECATION -g -fPIC -O2 -Wunused -Werror -Wshadow -Wno-unknown-warning-option -Wno-inconsistent-missing-override -Wno-c99-designator -Wno-reorder-init-list -Wno-vla-cxx-extension -DGL_SILENCE_DEPRECATION -I/opt/homebrew/include -I/opt/homebrew/opt/openssl@3.0/include -I. -Ithird_party/acados/include -Ithird_party/acados/include/blasfeo/include -Ithird_party/acados/include/hpipm/include -Ithird_party/catch2/include -Ithird_party/libyuv/include -Ithird_party/json11 -Ithird_party/linux/include -Ithird_party -Imsgq common/tests/test_swaglog.cc
+ar rc common/libgpucommon.a common/clutil.o
+ranlib common/libgpucommon.a
+clang++ -o common/transformations/coordinates.o -c -std=c++1z -DGL_SILENCE_DEPRECATION -g -fPIC -O2 -Wunused -Werror -Wshadow -Wno-unknown-warning-option -Wno-inconsistent-missing-override -Wno-c99-designator -Wno-reorder-init-list -Wno-vla-cxx-extension -DGL_SILENCE_DEPRECATION -I/opt/homebrew/include -I/opt/homebrew/opt/openssl@3.0/include -I. -Ithird_party/acados/include -Ithird_party/acados/include/blasfeo/include -Ithird_party/acados/include/hpipm/include -Ithird_party/catch2/include -Ithird_party/libyuv/include -Ithird_party/json11 -Ithird_party/linux/include -Ithird_party -Imsgq common/transformations/coordinates.cc
+clang++ -o common/transformations/orientation.o -c -std=c++1z -DGL_SILENCE_DEPRECATION -g -fPIC -O2 -Wunused -Werror -Wshadow -Wno-unknown-warning-option -Wno-inconsistent-missing-override -Wno-c99-designator -Wno-reorder-init-list -Wno-vla-cxx-extension -DGL_SILENCE_DEPRECATION -I/opt/homebrew/include -I/opt/homebrew/opt/openssl@3.0/include -I. -Ithird_party/acados/include -Ithird_party/acados/include/blasfeo/include -Ithird_party/acados/include/hpipm/include -Ithird_party/catch2/include -Ithird_party/libyuv/include -Ithird_party/json11 -Ithird_party/linux/include -Ithird_party -Imsgq common/transformations/orientation.cc
+ar rc cereal/libcereal.a cereal/gen/cpp/log.capnp.o cereal/gen/cpp/car.capnp.o cereal/gen/cpp/legacy.capnp.o cereal/gen/cpp/custom.capnp.o
+ranlib cereal/libcereal.a
+cythonize common/transformations/transformations.pyx
+clang++ -o msgq_repo/msgq/visionipc/visionipc.os -c -std=c++1z -DGL_SILENCE_DEPRECATION -DSWAGLOG="\"common/swaglog.h\"" -g -fPIC -O2 -Wunused -Werror -Wshadow -Wno-unknown-warning-option -Wno-inconsistent-missing-override -Wno-c99-designator -Wno-reorder-init-list -Wno-vla-cxx-extension -DGL_SILENCE_DEPRECATION -fPIC -I/opt/homebrew/include -I/opt/homebrew/opt/openssl@3.0/include -I. -Ithird_party/acados/include -Ithird_party/acados/include/blasfeo/include -Ithird_party/acados/include/hpipm/include -Ithird_party/catch2/include -Ithird_party/libyuv/include -Ithird_party/json11 -Ithird_party/linux/include -Ithird_party -Imsgq msgq_repo/msgq/visionipc/visionipc.cc
+Building compilation database compile_commands.json
+clang++ -o msgq_repo/msgq/visionipc/visionipc_server.os -c -std=c++1z -DGL_SILENCE_DEPRECATION -DSWAGLOG="\"common/swaglog.h\"" -g -fPIC -O2 -Wunused -Werror -Wshadow -Wno-unknown-warning-option -Wno-inconsistent-missing-override -Wno-c99-designator -Wno-reorder-init-list -Wno-vla-cxx-extension -DGL_SILENCE_DEPRECATION -fPIC -I/opt/homebrew/include -I/opt/homebrew/opt/openssl@3.0/include -I. -Ithird_party/acados/include -Ithird_party/acados/include/blasfeo/include -Ithird_party/acados/include/hpipm/include -Ithird_party/catch2/include -Ithird_party/libyuv/include -Ithird_party/json11 -Ithird_party/linux/include -Ithird_party -Imsgq msgq_repo/msgq/visionipc/visionipc_server.cc
+clang++ -o msgq_repo/msgq/visionipc/visionipc_client.os -c -std=c++1z -DGL_SILENCE_DEPRECATION -DSWAGLOG="\"common/swaglog.h\"" -g -fPIC -O2 -Wunused -Werror -Wshadow -Wno-unknown-warning-option -Wno-inconsistent-missing-override -Wno-c99-designator -Wno-reorder-init-list -Wno-vla-cxx-extension -DGL_SILENCE_DEPRECATION -fPIC -I/opt/homebrew/include -I/opt/homebrew/opt/openssl@3.0/include -I. -Ithird_party/acados/include -Ithird_party/acados/include/blasfeo/include -Ithird_party/acados/include/hpipm/include -Ithird_party/catch2/include -Ithird_party/libyuv/include -Ithird_party/json11 -Ithird_party/linux/include -Ithird_party -Imsgq msgq_repo/msgq/visionipc/visionipc_client.cc
+clang++ -o msgq_repo/msgq/visionipc/visionbuf.os -c -std=c++1z -DGL_SILENCE_DEPRECATION -DSWAGLOG="\"common/swaglog.h\"" -g -fPIC -O2 -Wunused -Werror -Wshadow -Wno-unknown-warning-option -Wno-inconsistent-missing-override -Wno-c99-designator -Wno-reorder-init-list -Wno-vla-cxx-extension -DGL_SILENCE_DEPRECATION -fPIC -I/opt/homebrew/include -I/opt/homebrew/opt/openssl@3.0/include -I. -Ithird_party/acados/include -Ithird_party/acados/include/blasfeo/include -Ithird_party/acados/include/hpipm/include -Ithird_party/catch2/include -Ithird_party/libyuv/include -Ithird_party/json11 -Ithird_party/linux/include -Ithird_party -Imsgq msgq_repo/msgq/visionipc/visionbuf.cc
+clang++ -o msgq_repo/msgq/visionipc/visionbuf_cl.os -c -std=c++1z -DGL_SILENCE_DEPRECATION -DSWAGLOG="\"common/swaglog.h\"" -g -fPIC -O2 -Wunused -Werror -Wshadow -Wno-unknown-warning-option -Wno-inconsistent-missing-override -Wno-c99-designator -Wno-reorder-init-list -Wno-vla-cxx-extension -DGL_SILENCE_DEPRECATION -fPIC -I/opt/homebrew/include -I/opt/homebrew/opt/openssl@3.0/include -I. -Ithird_party/acados/include -Ithird_party/acados/include/blasfeo/include -Ithird_party/acados/include/hpipm/include -Ithird_party/catch2/include -Ithird_party/libyuv/include -Ithird_party/json11 -Ithird_party/linux/include -Ithird_party -Imsgq msgq_repo/msgq/visionipc/visionbuf_cl.cc
+cythonize msgq_repo/msgq/ipc_pyx.pyx
+clang++ -o msgq_repo/msgq/msgq_tests.o -c -std=c++1z -DGL_SILENCE_DEPRECATION -DSWAGLOG="\"common/swaglog.h\"" -g -fPIC -O2 -Wunused -Werror -Wshadow -Wno-unknown-warning-option -Wno-inconsistent-missing-override -Wno-c99-designator -Wno-reorder-init-list -Wno-vla-cxx-extension -DGL_SILENCE_DEPRECATION -I/opt/homebrew/include -I/opt/homebrew/opt/openssl@3.0/include -I. -Ithird_party/acados/include -Ithird_party/acados/include/blasfeo/include -Ithird_party/acados/include/hpipm/include -Ithird_party/catch2/include -Ithird_party/libyuv/include -Ithird_party/json11 -Ithird_party/linux/include -Ithird_party -Imsgq msgq_repo/msgq/msgq_tests.cc
+clang++ -o msgq_repo/msgq/test_runner.o -c -std=c++1z -DGL_SILENCE_DEPRECATION -DSWAGLOG="\"common/swaglog.h\"" -g -fPIC -O2 -Wunused -Werror -Wshadow -Wno-unknown-warning-option -Wno-inconsistent-missing-override -Wno-c99-designator -Wno-reorder-init-list -Wno-vla-cxx-extension -DGL_SILENCE_DEPRECATION -I/opt/homebrew/include -I/opt/homebrew/opt/openssl@3.0/include -I. -Ithird_party/acados/include -Ithird_party/acados/include/blasfeo/include -Ithird_party/acados/include/hpipm/include -Ithird_party/catch2/include -Ithird_party/libyuv/include -Ithird_party/json11 -Ithird_party/linux/include -Ithird_party -Imsgq msgq_repo/msgq/test_runner.cc
+clang++ -o msgq_repo/msgq/visionipc/test_runner.o -c -std=c++1z -DGL_SILENCE_DEPRECATION -DSWAGLOG="\"common/swaglog.h\"" -g -fPIC -O2 -Wunused -Werror -Wshadow -Wno-unknown-warning-option -Wno-inconsistent-missing-override -Wno-c99-designator -Wno-reorder-init-list -Wno-vla-cxx-extension -DGL_SILENCE_DEPRECATION -I/opt/homebrew/include -I/opt/homebrew/opt/openssl@3.0/include -I. -Ithird_party/acados/include -Ithird_party/acados/include/blasfeo/include -Ithird_party/acados/include/hpipm/include -Ithird_party/catch2/include -Ithird_party/libyuv/include -Ithird_party/json11 -Ithird_party/linux/include -Ithird_party -Imsgq msgq_repo/msgq/visionipc/test_runner.cc
+ar rc msgq_repo/libvisionipc.a msgq_repo/msgq/visionipc/visionipc.os msgq_repo/msgq/visionipc/visionipc_server.os msgq_repo/msgq/visionipc/visionipc_client.os msgq_repo/msgq/visionipc/visionbuf.os msgq_repo/msgq/visionipc/visionbuf_cl.os
+ar rc common/transformations/libtransformations.a common/transformations/orientation.o common/transformations/coordinates.o
+ranlib msgq_repo/libvisionipc.a
+ranlib common/transformations/libtransformations.a
+clang++ -o msgq_repo/msgq/visionipc/visionipc_tests.o -c -std=c++1z -DGL_SILENCE_DEPRECATION -DSWAGLOG="\"common/swaglog.h\"" -g -fPIC -O2 -Wunused -Werror -Wshadow -Wno-unknown-warning-option -Wno-inconsistent-missing-override -Wno-c99-designator -Wno-reorder-init-list -Wno-vla-cxx-extension -DGL_SILENCE_DEPRECATION -I/opt/homebrew/include -I/opt/homebrew/opt/openssl@3.0/include -I. -Ithird_party/acados/include -Ithird_party/acados/include/blasfeo/include -Ithird_party/acados/include/hpipm/include -Ithird_party/catch2/include -Ithird_party/libyuv/include -Ithird_party/json11 -Ithird_party/linux/include -Ithird_party -Imsgq msgq_repo/msgq/visionipc/visionipc_tests.cc
+cythonize msgq_repo/msgq/visionipc/visionipc_pyx.pyx
+python3 opendbc_repo/opendbc/dbc/generator/generator.py
+ar rc common/libcommon.a common/params.o common/swaglog.o common/util.o common/watchdog.o common/ratekeeper.o
+ar rc cereal/libsocketmaster.a cereal/messaging/socketmaster.o
+ranlib common/libcommon.a
+ranlib cereal/libsocketmaster.a
+clang++ -o cereal/messaging/bridge cereal/messaging/bridge.o cereal/messaging/msgq_to_zmq.o -Lthird_party/libyuv/Darwin/lib -Lthird_party/acados/Darwin/lib -L/opt/homebrew/lib -L/opt/homebrew/opt/openssl@3.0/lib -L/System/Library/Frameworks/OpenGL.framework/Libraries -Lmsgq_repo -Lthird_party -Lselfdrive/pandad -Lcommon -Lrednose/helpers msgq_repo/libmsgq.a common/libcommon.a -ljson11 -lzmq -lpthread -framework OpenCL
+Traceback (most recent call last):
+  File "/Users/vibhusapra/projects/openpilot_v010_polestar2/opendbc_repo/opendbc/dbc/generator/tesla/tesla_radar_continental.py", line 4, in <module>
+    from opendbc.dbc.generator.tesla._radar_common import get_radar_point_definition, get_val_definition
+ModuleNotFoundError: No module named 'opendbc'
+Traceback (most recent call last):
+  File "/Users/vibhusapra/projects/openpilot_v010_polestar2/opendbc_repo/opendbc/dbc/generator/generator.py", line 65, in <module>
+    create_all(opendbc_root)
+  File "/Users/vibhusapra/projects/openpilot_v010_polestar2/opendbc_repo/opendbc/dbc/generator/generator.py", line 49, in create_all
+    subprocess.check_call(f)
+  File "/opt/homebrew/Cellar/python@3.11/3.11.14_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/subprocess.py", line 413, in check_call
+    raise CalledProcessError(retcode, cmd)
+subprocess.CalledProcessError: Command '/Users/vibhusapra/projects/openpilot_v010_polestar2/opendbc_repo/opendbc/dbc/generator/tesla/tesla_radar_continental.py' returned non-zero exit status 1.
+scons: *** [opendbc_repo/opendbc/dbc/hyundai_kia_mando_corner_radar_generated.dbc] Error 1
+gcc -o opendbc_repo/opendbc/safety/tests/libsafety/safety.os -c -Wall -Wextra -Werror -nostdlib -fno-builtin -std=gnu11 -Wfatal-errors -Wno-pointer-to-int-cast -g -O0 -fno-omit-frame-pointer -fprofile-arcs -ftest-coverage -DALLOW_DEBUG -fPIC -I. -Iopendbc_repo/opendbc/safety/board opendbc_repo/opendbc/safety/tests/libsafety/safety.c
+ld: warning: search path '/opt/homebrew/opt/openssl@3.0/lib' not found
+Traceback (most recent call last):
+Traceback (most recent call last):
+Traceback (most recent call last):
+Traceback (most recent call last):
+  File "/opt/homebrew/bin/cythonize", line 7, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "/opt/homebrew/lib/python3.14/site-packages/Cython/Build/Cythonize.py", line 324, in main
+    ext_modules_by_basedir = _cython_compile_files(all_paths, options)
+  File "/opt/homebrew/bin/cythonize", line 7, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "/opt/homebrew/lib/python3.14/site-packages/Cython/Build/Cythonize.py", line 324, in main
+    ext_modules_by_basedir = _cython_compile_files(all_paths, options)
+  File "/opt/homebrew/lib/python3.14/site-packages/Cython/Build/Cythonize.py", line 51, in _cython_compile_files
+    ext_modules = cythonize(
+        paths,
+    ...<8 lines>...
+        language=options.language,
+        **options.options)
+  File "/opt/homebrew/lib/python3.14/site-packages/Cython/Build/Cythonize.py", line 51, in _cython_compile_files
+    ext_modules = cythonize(
+        paths,
+    ...<8 lines>...
+        language=options.language,
+        **options.options)
+  File "/opt/homebrew/lib/python3.14/site-packages/Cython/Build/Dependencies.py", line 981, in cythonize
+    module_list, module_metadata = create_extension_list(
+                                   ~~~~~~~~~~~~~~~~~~~~~^
+        module_list,
+        ^^^^^^^^^^^^
+    ...<4 lines>...
+        language=language,
+        ^^^^^^^^^^^^^^^^^^
+        aliases=aliases)
+        ^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.14/site-packages/Cython/Build/Dependencies.py", line 737, in create_extension_list
+    from distutils.extension import Extension
+ModuleNotFoundError: No module named 'distutils'
+  File "/opt/homebrew/lib/python3.14/site-packages/Cython/Build/Dependencies.py", line 981, in cythonize
+    module_list, module_metadata = create_extension_list(
+                                   ~~~~~~~~~~~~~~~~~~~~~^
+        module_list,
+        ^^^^^^^^^^^^
+    ...<4 lines>...
+        language=language,
+        ^^^^^^^^^^^^^^^^^^
+        aliases=aliases)
+        ^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.14/site-packages/Cython/Build/Dependencies.py", line 737, in create_extension_list
+    from distutils.extension import Extension
+ModuleNotFoundError: No module named 'distutils'
+  File "/opt/homebrew/bin/cythonize", line 7, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "/opt/homebrew/lib/python3.14/site-packages/Cython/Build/Cythonize.py", line 324, in main
+    ext_modules_by_basedir = _cython_compile_files(all_paths, options)
+  File "/opt/homebrew/lib/python3.14/site-packages/Cython/Build/Cythonize.py", line 51, in _cython_compile_files
+    ext_modules = cythonize(
+        paths,
+    ...<8 lines>...
+        language=options.language,
+        **options.options)
+  File "/opt/homebrew/lib/python3.14/site-packages/Cython/Build/Dependencies.py", line 981, in cythonize
+    module_list, module_metadata = create_extension_list(
+                                   ~~~~~~~~~~~~~~~~~~~~~^
+        module_list,
+        ^^^^^^^^^^^^
+    ...<4 lines>...
+        language=language,
+        ^^^^^^^^^^^^^^^^^^
+        aliases=aliases)
+        ^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.14/site-packages/Cython/Build/Dependencies.py", line 737, in create_extension_list
+    from distutils.extension import Extension
+ModuleNotFoundError: No module named 'distutils'
+  File "/opt/homebrew/bin/cythonize", line 7, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "/opt/homebrew/lib/python3.14/site-packages/Cython/Build/Cythonize.py", line 324, in main
+    ext_modules_by_basedir = _cython_compile_files(all_paths, options)
+  File "/opt/homebrew/lib/python3.14/site-packages/Cython/Build/Cythonize.py", line 51, in _cython_compile_files
+    ext_modules = cythonize(
+        paths,
+    ...<8 lines>...
+        language=options.language,
+        **options.options)
+  File "/opt/homebrew/lib/python3.14/site-packages/Cython/Build/Dependencies.py", line 981, in cythonize
+    module_list, module_metadata = create_extension_list(
+                                   ~~~~~~~~~~~~~~~~~~~~~^
+        module_list,
+        ^^^^^^^^^^^^
+    ...<4 lines>...
+        language=language,
+        ^^^^^^^^^^^^^^^^^^
+        aliases=aliases)
+        ^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/lib/python3.14/site-packages/Cython/Build/Dependencies.py", line 737, in create_extension_list
+    from distutils.extension import Extension
+ModuleNotFoundError: No module named 'distutils'
+scons: *** [msgq_repo/msgq/ipc_pyx.cpp] Error 1
+scons: *** [msgq_repo/msgq/visionipc/visionipc_pyx.cpp] Error 1
+scons: *** [common/transformations/transformations.cpp] Error 1
+scons: *** [common/params_pyx.cpp] Error 1
+scons: building terminated because of errors.
+Build exit code: 2

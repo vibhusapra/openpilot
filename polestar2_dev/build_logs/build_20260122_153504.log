@@ -1,0 +1,29 @@
+ModuleNotFoundError: No module named 'Crypto':
+  File "/Users/vibhusapra/projects/openpilot_v010_polestar2/SConstruct", line 331:
+    SConscript(['panda/SConscript'])
+  File "/opt/homebrew/lib/python3.14/site-packages/SCons/Script/SConscript.py", line 687:
+    return method(*args, **kw)
+  File "/opt/homebrew/lib/python3.14/site-packages/SCons/Script/SConscript.py", line 623:
+    return _SConscript(self.fs, *files, **subst_kw)
+  File "/opt/homebrew/lib/python3.14/site-packages/SCons/Script/SConscript.py", line 281:
+    exec(compile(scriptdata, scriptname, 'exec'), call_stack[-1].globals)
+  File "/Users/vibhusapra/projects/openpilot_v010_polestar2/panda/SConscript", line 161:
+    certs = [get_key_header(n) for n in ["debug", "release"]]
+  File "/Users/vibhusapra/projects/openpilot_v010_polestar2/panda/SConscript", line 34:
+    from Crypto.PublicKey import RSA
+=== BUILD START Thu Jan 22 15:35:05 PST 2026 ===
+scons: Reading SConscript files ...
+ModuleNotFoundError: No module named 'Crypto':
+  File "/Users/vibhusapra/projects/openpilot_v010_polestar2/SConstruct", line 331:
+    SConscript(['panda/SConscript'])
+  File "/opt/homebrew/lib/python3.14/site-packages/SCons/Script/SConscript.py", line 687:
+    return method(*args, **kw)
+  File "/opt/homebrew/lib/python3.14/site-packages/SCons/Script/SConscript.py", line 623:
+    return _SConscript(self.fs, *files, **subst_kw)
+  File "/opt/homebrew/lib/python3.14/site-packages/SCons/Script/SConscript.py", line 281:
+    exec(compile(scriptdata, scriptname, 'exec'), call_stack[-1].globals)
+  File "/Users/vibhusapra/projects/openpilot_v010_polestar2/panda/SConscript", line 161:
+    certs = [get_key_header(n) for n in ["debug", "release"]]
+  File "/Users/vibhusapra/projects/openpilot_v010_polestar2/panda/SConscript", line 34:
+    from Crypto.PublicKey import RSA
+=== BUILD END Thu Jan 22 15:35:06 PST 2026 ===
