@@ -48,9 +48,11 @@ class LongControl:
   def __init__(self, CP):
     self.CP = CP
     self.long_control_state = LongCtrlState.off
+    # Handle deprecated kf field for Volvo/other cars
+    kf_value = getattr(CP.longitudinalTuning, 'kf', 0.0)
     self.pid = PIDController((CP.longitudinalTuning.kpBP, CP.longitudinalTuning.kpV),
                              (CP.longitudinalTuning.kiBP, CP.longitudinalTuning.kiV),
-                             k_f=CP.longitudinalTuning.kf, rate=1 / DT_CTRL)
+                             k_f=kf_value, rate=1 / DT_CTRL)
     self.last_output_accel = 0.0
 
   def reset(self):
